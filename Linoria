@@ -149,6 +149,7 @@ function Library:CreateLabel(Properties, IsHud)
         Font = Library.Font;
         TextColor3 = Library.FontColor;
         TextSize = 16;
+        RichText = true;
         TextStrokeTransparency = 0;
     });
 
@@ -207,6 +208,7 @@ function Library:AddToolTip(InfoStr, HoverInstance)
         Size = UDim2.fromOffset(X, Y);
         TextSize = 14;
         Text = InfoStr,
+        RichText = true;
         TextColor3 = Library.FontColor,
         TextXAlignment = Enum.TextXAlignment.Left;
         ZIndex = Tooltip.ZIndex + 1,

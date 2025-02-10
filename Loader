@@ -3,10 +3,15 @@ if game.PlaceId == 14259168147 or game.PlaceId == 14386691987 then
   loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/BasketballLegends"))()
   wait()
   warn("Loaded! Enjoy.")
-end
-if game.PlaceId == 3297964905 then
-  warn("Loading Weaponary Free")
+  elseif game.PlaceId == 3297964905 then
+   warn("Loading Weaponary Free")
   loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Weaponary_Free"))()
   wait()
   warn("Loaded! Enjoy.")
+  else
+  warn("Loading Weaponary Free")
+  loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNation"))()
+  wait()
+  warn("Loaded! Enjoy.")
+  
 end

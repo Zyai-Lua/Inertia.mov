@@ -1,0 +1,167 @@
+repeat task.wait() until game:IsLoaded()
+
+getgenv().LaundryAutofarm = true
+getgenv().EmergencyStop = false
+
+local Players = cloneref(game:GetService("Players"))
+local RunService = cloneref(game:GetService("RunService"))
+local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+local WeaponEvent = ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("WeaponEvent")
+local ImportantInteractive = workspace.ImportantInteractive
+local JobSigns = workspace.JobSigns
+
+local JobFrame = LocalPlayer.PlayerGui.HUD.JobFrame
+local StartButton = JobFrame.StartButton
+local ExitButton = JobFrame.ExitButton
+
+local LaundryTableCFrame = CFrame.new(777.9755859375, 8.102447509765625, -101.28254699707031)
+
+local EndJobArgs = {
+	[1] = "StartEndJob",
+	[2] = workspace:WaitForChild("JobSigns"):WaitForChild("WorkSign"),
+	[3] = "End"
+}
+
+local function StartLaundryAutofarm()
+	while getgenv().LaundryAutofarm do
+
+		if not LocalPlayer:FindFirstChild("CurrentJob") or LocalPlayer.Backpack.Stats.Job.JobName.Value ~= "LAUNDRY WORKER"  then
+			Character.HumanoidRootPart.CFrame = LaundryTableCFrame
+			wait()
+
+			for _, value in next, JobSigns:GetChildren() do
+				if value:FindFirstChild("JobDetails"):FindFirstChild("JobName").Value == "LAUNDRY WORKER" then
+					value.Sign.Attachment:FindFirstChildOfClass("ProximityPrompt").RequiresLineOfSight = false
+					wait()
+					repeat 
+						fireproximityprompt(value.Sign.Attachment:FindFirstChildOfClass("ProximityPrompt")) 
+						task.wait(0.5)
+					until JobFrame.Visible
+				end
+			end
+
+			if not getgenv().LaundryAutofarm then return end
+			wait(1)
+			if JobFrame.Visible then
+				task.wait(1.5) -- Give UI some time to fully open ; the lovely work of chat skibidi b once again
+				repeat 
+					firesignal(StartButton.MouseButton1Click)
+					task.wait(0.5)
+				until LocalPlayer:FindFirstChild("CurrentJob") or LocalPlayer.Backpack.Stats.Job.JobName.Value == "LAUNDRY WORKER"
+			end
+			wait(1)
+			JobFrame.Visible = false
+		end
+
+		for _, machine in next, ImportantInteractive:GetChildren() do
+			if getgenv().EmergencyStop then
+				getgenv().LaundryAutofarm = false
+				WeaponEvent:FireServer(unpack(EndJobArgs))
+				return
+			end
+
+			if machine:IsA("Model") and machine.Name == "WashingMachine" then
+				local OpenProximityPrompt = machine:FindFirstChild("OpenPromptPart"):FindFirstChildOfClass("ProximityPrompt")
+				local GrabProximityPrompt = machine:FindFirstChild("GrabPromptPart"):FindFirstChildOfClass("ProximityPrompt")
+
+				if not OpenProximityPrompt or not GrabProximityPrompt then
+					continue
+				end
+
+				if not OpenProximityPrompt.Enabled and not GrabProximityPrompt.Enabled then
+					continue
+				end
+
+				OpenProximityPrompt.RequiresLineOfSight = false
+				GrabProximityPrompt.RequiresLineOfSight = false
+
+				if getgenv().EmergencyStop then
+					getgenv().LaundryAutofarm = false
+					WeaponEvent:FireServer(unpack(EndJobArgs))
+					return
+				end
+
+				if OpenProximityPrompt.Enabled then
+                    Character.HumanoidRootPart.CFrame = machine.GrabPromptPart.CFrame + Vector3.new(0, -6, 0)
+					wait()
+					repeat 
+						fireproximityprompt(OpenProximityPrompt, 7)
+						task.wait()
+						if getgenv().EmergencyStop then
+							getgenv().LaundryAutofarm = false
+							WeaponEvent:FireServer(unpack(EndJobArgs))
+							return
+						end
+					until not OpenProximityPrompt.Enabled or not getgenv().LaundryAutofarm
+
+					wait(1)
+
+					repeat 
+						fireproximityprompt(GrabProximityPrompt, 7)
+						task.wait()
+						if getgenv().EmergencyStop then
+							getgenv().LaundryAutofarm = false
+							WeaponEvent:FireServer(unpack(EndJobArgs))
+							return
+						end
+					until not GrabProximityPrompt.Enabled or not getgenv().LaundryAutofarm
+
+				elseif GrabProximityPrompt.Enabled then
+                    Character.HumanoidRootPart.CFrame = machine.GrabPromptPart.CFrame + Vector3.new(0, -6, 0)
+					wait()
+					repeat 
+						fireproximityprompt(GrabProximityPrompt, 7)
+						task.wait()
+						if getgenv().EmergencyStop then
+							getgenv().LaundryAutofarm = false
+							WeaponEvent:FireServer(unpack(EndJobArgs))
+							return
+						end
+					until not GrabProximityPrompt.Enabled or not getgenv().LaundryAutofarm
+				end
+
+				wait(0.1)
+			end
+		end
+
+		if getgenv().EmergencyStop then
+			getgenv().LaundryAutofarm = false
+			WeaponEvent:FireServer(unpack(EndJobArgs))
+			return
+		end
+
+		task.wait()
+	end
+end
+task.spawn(StartLaundryAutofarm)
+
+--my kings over at infinite yield and ChatGPT <3
+task.spawn(function()
+    -- Create the floating part
+    local Float = Instance.new("Part")
+    Float.Name = "FloatPart"
+    Float.Parent = game.Players.LocalPlayer.Character
+    Float.Transparency = 1
+    Float.Size = Vector3.new(2, 0.2, 1.5)
+    Float.Anchored = true
+
+    -- Set a fixed offset for the float (adjust as needed)
+    local FloatValue = -3.1
+    Float.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, FloatValue, 0)
+    
+    --notify("Float", "Float Enabled")  -- Optional notification
+
+    -- Update the float's position every frame
+    local FloatingFunc = RunService.Heartbeat:Connect(function()
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character.HumanoidRootPart and getgenv().LaundryAutofarm then
+            Float.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, FloatValue, 0)
+        else
+            FloatingFunc:Disconnect()
+            Float:Destroy()
+        end
+    end)
+end)

@@ -1,0 +1,610 @@
+repeat task.wait() until game:IsLoaded()
+
+local players = game:GetService("Players")
+local camera = game.Workspace.CurrentCamera
+local runService = game:GetService("RunService")
+
+local playerESP = {}
+
+local skeletons = {
+    enabled = false,
+    color = Color3.fromRGB(255, 255, 255),
+    thickness = 2
+}
+
+local function createLine()
+    local line = Drawing.new("Line")
+    line.Visible = false
+    line.Color = skeletons.color
+    line.Thickness = skeletons.thickness
+    return line
+end
+
+local function createSkeleton()
+    return {
+        HeadToUpperTorso = createLine(),
+        UpperTorsoToLowerTorso = createLine(),
+        UpperTorsoToLeftUpperArm = createLine(),
+        LeftUpperArmToLeftLowerArm = createLine(),
+        LeftLowerArmToLeftHand = createLine(),
+        UpperTorsoToRightUpperArm = createLine(),
+        RightUpperArmToRightLowerArm = createLine(),
+        RightLowerArmToRightHand = createLine(),
+        LowerTorsoToLeftUpperLeg = createLine(),
+        LeftUpperLegToLeftLowerLeg = createLine(),
+        LeftLowerLegToLeftFoot = createLine(),
+        LowerTorsoToRightUpperLeg = createLine(),
+        RightUpperLegToRightLowerLeg = createLine(),
+        RightLowerLegToRightFoot = createLine()
+    }
+end
+
+local function updateSkeleton(skeleton, character)
+    if not character then return end
+
+    local joints = {
+        Head = character:FindFirstChild("Head"),
+        UpperTorso = character:FindFirstChild("UpperTorso"),
+        LowerTorso = character:FindFirstChild("LowerTorso"),
+        LeftUpperArm = character:FindFirstChild("LeftUpperArm"),
+        LeftLowerArm = character:FindFirstChild("LeftLowerArm"),
+        LeftHand = character:FindFirstChild("LeftHand"),
+        RightUpperArm = character:FindFirstChild("RightUpperArm"),
+        RightLowerArm = character:FindFirstChild("RightLowerArm"),
+        RightHand = character:FindFirstChild("RightHand"),
+        LeftUpperLeg = character:FindFirstChild("LeftUpperLeg"),
+        LeftLowerLeg = character:FindFirstChild("LeftLowerLeg"),
+        LeftFoot = character:FindFirstChild("LeftFoot"),
+        RightUpperLeg = character:FindFirstChild("RightUpperLeg"),
+        RightLowerLeg = character:FindFirstChild("RightLowerLeg"),
+        RightFoot = character:FindFirstChild("RightFoot")
+    }
+
+    local function getScreenPosition(part)
+        if part then
+            local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+            if onScreen then
+                return Vector2.new(screenPos.X, screenPos.Y)
+            end
+        end
+        return nil
+    end
+
+    local function updateLine(line, from, to)
+        if from and to then
+            line.From = from
+            line.To = to
+			if features.visuals.enabled and skeletons.enabled then
+				line.Visible = true
+			else
+				line.Visible = false
+			end
+            
+            line.Color = skeletons.color
+            line.Thickness = skeletons.thickness
+        else
+            line.Visible = false
+        end
+    end
+
+    local screenPositions = {}
+    for joint, part in pairs(joints) do
+        screenPositions[joint] = getScreenPosition(part)
+    end
+
+    updateLine(skeleton.HeadToUpperTorso, screenPositions.Head, screenPositions.UpperTorso)
+    updateLine(skeleton.UpperTorsoToLowerTorso, screenPositions.UpperTorso, screenPositions.LowerTorso)
+    updateLine(skeleton.UpperTorsoToLeftUpperArm, screenPositions.UpperTorso, screenPositions.LeftUpperArm)
+    updateLine(skeleton.LeftUpperArmToLeftLowerArm, screenPositions.LeftUpperArm, screenPositions.LeftLowerArm)
+    updateLine(skeleton.LeftLowerArmToLeftHand, screenPositions.LeftLowerArm, screenPositions.LeftHand)
+    updateLine(skeleton.UpperTorsoToRightUpperArm, screenPositions.UpperTorso, screenPositions.RightUpperArm)
+    updateLine(skeleton.RightUpperArmToRightLowerArm, screenPositions.RightUpperArm, screenPositions.RightLowerArm)
+    updateLine(skeleton.RightLowerArmToRightHand, screenPositions.RightLowerArm, screenPositions.RightHand)
+    updateLine(skeleton.LowerTorsoToLeftUpperLeg, screenPositions.LowerTorso, screenPositions.LeftUpperLeg)
+    updateLine(skeleton.LeftUpperLegToLeftLowerLeg, screenPositions.LeftUpperLeg, screenPositions.LeftLowerLeg)
+    updateLine(skeleton.LeftLowerLegToLeftFoot, screenPositions.LeftLowerLeg, screenPositions.LeftFoot)
+    updateLine(skeleton.LowerTorsoToRightUpperLeg, screenPositions.LowerTorso, screenPositions.RightUpperLeg)
+    updateLine(skeleton.RightUpperLegToRightLowerLeg, screenPositions.RightUpperLeg, screenPositions.RightLowerLeg)
+    updateLine(skeleton.RightLowerLegToRightFoot, screenPositions.RightLowerLeg, screenPositions.RightFoot)
+end
+
+local function trackPlayer(player)
+    if player == players.LocalPlayer then return end
+
+    local skeleton = createSkeleton()
+    playerESP[player] = { skeleton = skeleton, connection = nil }
+
+    local function onCharacterAdded(character)
+        if playerESP[player].connection then
+            playerESP[player].connection:Disconnect()
+        end
+        
+        playerESP[player].connection = runService.RenderStepped:Connect(function()
+            updateSkeleton(skeleton, character)
+        end)
+    end
+
+    if player.Character then
+        onCharacterAdded(player.Character)
+    end
+
+    player.CharacterAdded:Connect(onCharacterAdded)
+end
+
+local function cleanupPlayerESP(player)
+    if playerESP[player] then
+        if playerESP[player].connection then
+            playerESP[player].connection:Disconnect()
+        end
+        for _, line in pairs(playerESP[player].skeleton) do
+            line.Visible = false
+            line:Remove()
+        end
+        playerESP[player] = nil
+    end
+end
+
+for _, player in ipairs(players:GetPlayers()) do
+    trackPlayer(player)
+end
+
+players.PlayerAdded:Connect(trackPlayer)
+players.PlayerRemoving:Connect(cleanupPlayerESP)
+
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+	Character = newCharacter
+end)
+
+getgenv().global = getgenv()
+
+function global.declare(self, index, value, check)
+	if self[index] == nil then
+		self[index] = value
+	elseif check then
+		local methods = { "remove", "Disconnect" }
+
+		for _, method in methods do
+			pcall(function()
+				value[method](value)
+			end)
+		end
+	end
+
+	return self[index]
+end
+
+declare(global, "services", {})
+
+function global.get(service)
+	return services[service]
+end
+
+declare(declare(services, "loop", {}), "cache", {})
+
+get("loop").new = function(self, index, func, disabled)
+	if disabled == nil and (func == nil or typeof(func) == "boolean") then
+		disabled = func func = index
+	end
+
+	self.cache[index] = {
+		["enabled"] = (not disabled),
+		["func"] = func,
+		["toggle"] = function(self, boolean)
+			if boolean == nil then
+				self.enabled = not self.enabled
+			else
+				self.enabled = boolean
+			end
+		end,
+		["remove"] = function()
+			self.cache[index] = nil
+		end
+	}
+
+	return self.cache[index]
+end
+
+declare(get("loop"), "connection", cloneref(game:GetService("RunService")).RenderStepped:Connect(function(delta)
+	for _, loop in get("loop").cache do
+		if loop.enabled then
+			local success, result = pcall(function()
+				loop.func(delta)
+			end)
+
+
+		end
+	end
+end), true)
+
+declare(services, "new", {})
+
+get("new").drawing = function(class, properties)
+	local drawing = Drawing.new(class)
+	for property, value in properties do
+		pcall(function()
+			drawing[property] = value
+		end)
+	end
+	return drawing
+end
+
+declare(declare(services, "player", {}), "cache", {})
+
+get("player").find = function(self, player)
+	for character, data in self.cache do
+		if data.player == player then
+			return character
+		end
+	end
+end
+
+get("player").check = function(self, player)
+	local success, check = pcall(function()
+		local character = player:IsA("Player") and player.Character or player
+		local children = { character.Humanoid, character.HumanoidRootPart }
+
+		return children and character.Parent ~= nil
+	end)
+
+	return success and check
+end
+
+get("player").new = function(self, player)
+	local function cache(character)
+
+		self.cache[character] = {
+			["player"] = player,
+			["drawings"] = {
+				["box"] = get("new").drawing("Square", { Visible = false }),
+				["boxFilled"] = get("new").drawing("Square", { Visible = false, Filled = true }),
+				["boxOutline"] = get("new").drawing("Square", { Visible = false }),
+				["name"] = get("new").drawing("Text", { Visible = false, Center = true}),
+				["health"] = get("new").drawing("Line", { Visible = false }),
+				["healthOutline"] = get("new").drawing("Line", { Visible = false }),
+				["healthText"] = get("new").drawing("Text", { Visible = false, Center = false}),
+				["distance"] = get("new").drawing("Text", { Visible = false, Center = true}),
+				["weapon"] = get("new").drawing("Text", { Visible = false, Center = true}),
+				["headcircles"] = get("new").drawing("Circle", { Visible = false}),
+				["headcirclesoutline"] = get("new").drawing("Circle", { Visible = false}),
+				["tracer"] = get("new").drawing("Line", { Visible = false}),
+				["traceroutline"] = get("new").drawing("Line", { Visible = false}),
+
+			}
+		}
+	end
+
+	local function check(character)
+		if self:check(character) then
+			cache(character)
+			print("cashching")
+		else
+			local listener; listener = character.ChildAdded:Connect(function()
+				if self:check(character) then
+					cache(character) listener:Disconnect()
+				end
+			end)
+		end
+	end
+
+	if player.Character then check(player.Character) end
+	player.CharacterAdded:Connect(check)
+end
+
+get("player").remove = function(self, player)
+
+	if player:IsA("Player") then
+		local character = self:find(player)
+		if character then
+			self:remove(character)
+		end
+	else
+		local drawings = self.cache[player].drawings self.cache[player] = nil
+
+		for _, drawing in drawings do
+			drawing:Remove()
+		end
+	end
+end
+
+get("player").update = function(self, character, data)
+	if not self:check(character) then
+		self:remove(character)
+	end
+
+
+	local player = data.player
+	local root = character.HumanoidRootPart
+	local humanoid = character.Humanoid
+	local drawings = data.drawings
+
+	if self:check(LocalPlayer) then
+		data.distance = (LocalPlayer.Character.HumanoidRootPart.CFrame.Position - root.CFrame.Position).Magnitude
+	end
+
+	local weapon = character:FindFirstChildWhichIsA("Tool") or "none"
+
+	task.spawn(function()
+		local position, visible = Camera:WorldToViewportPoint(root.CFrame.Position)
+		local hposition, hvisible = Camera:WorldToViewportPoint(character.Head.CFrame.Position)
+
+		local visuals = features.visuals
+
+		local function check()
+			if not visuals or not visuals.enabled then
+				return false
+			end
+			local team = true
+			if visuals.teamCheck and player.Team and LocalPlayer.Team then
+				team = Character.HumanoidRootPart:FindFirstChild("TeammateLabel")
+			end
+			return data.distance and data.distance <= (visuals.renderDistance or math.huge) and team
+		end
+
+		local function color(color)
+			if visuals.teamColor then
+				color = player.TeamColor.Color
+			end
+			return color
+		end
+
+		if visible and check() then
+			local scale = 1 / (position.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 1000
+			local width, height = math.floor(4.5 * scale), math.floor(6 * scale)
+			local x, y = math.floor(position.X), math.floor(position.Y)
+			local hx, hy = math.floor(hposition.X), math.floor(hposition.Y)
+			local xPosition, yPostion = math.floor(x - width * 0.5), math.floor((y - height * 0.5) + (0.5 * scale))
+
+			drawings.box.Size = Vector2.new(width, height)
+			drawings.box.Position = Vector2.new(xPosition, yPostion)
+			drawings.boxFilled.Size = drawings.box.Size
+			drawings.boxFilled.Position = drawings.box.Position
+			drawings.boxOutline.Size = drawings.box.Size
+			drawings.boxOutline.Position = drawings.box.Position
+
+			drawings.box.Color = color(visuals.boxes.color)
+			drawings.box.Thickness = 1
+			drawings.boxFilled.Color = color(visuals.boxes.filled.color)
+			drawings.boxFilled.Transparency = visuals.boxes.filled.transparency
+			drawings.boxOutline.Color = visuals.boxes.outline.color
+			drawings.boxOutline.Thickness = 3
+
+			drawings.boxOutline.ZIndex = drawings.box.ZIndex - 1
+			drawings.boxFilled.ZIndex = drawings.boxOutline.ZIndex - 1
+
+			drawings.name.Text = `[ {player.Name} ]`
+			drawings.name.Size = math.max(math.min(math.abs(12.5 * scale), 12.5), 10)
+			drawings.name.Position = Vector2.new(x, (yPostion - drawings.name.TextBounds.Y) - 2)
+			drawings.name.Color = color(visuals.names.color)
+			drawings.name.Outline = visuals.names.outline.enabled
+			drawings.name.OutlineColor = visuals.names.outline.color
+
+			drawings.name.ZIndex = drawings.box.ZIndex + 1
+
+			local healthPercent = 100 / (humanoid.MaxHealth / humanoid.Health)
+
+			drawings.healthOutline.From = Vector2.new(xPosition - 5, yPostion)
+			drawings.healthOutline.To = Vector2.new(xPosition - 5, yPostion + height)
+			drawings.health.From = Vector2.new(xPosition - 5, (yPostion + height) - 1)
+			drawings.health.To = Vector2.new(xPosition - 5, ((drawings.health.From.Y - ((height / 100) * healthPercent))) + 2)
+			drawings.healthText.Text = `[ HP {math.floor(humanoid.Health)} ]`
+			drawings.healthText.Size = math.max(math.min(math.abs(11 * scale), 11), 10)
+			drawings.healthText.Position = Vector2.new(drawings.health.To.X - (drawings.healthText.TextBounds.X + 3), (drawings.health.To.Y - (2 / scale)))
+
+			drawings.health.Color = visuals.health.colorLow:Lerp(visuals.health.color, healthPercent * 0.01)
+			drawings.healthOutline.Color = visuals.health.outline.color
+			drawings.healthOutline.Thickness = 6
+			drawings.health.Thickness = 3
+			drawings.healthText.Color = drawings.health.Color
+			drawings.healthText.Outline = visuals.health.text.outline.enabled
+			drawings.healthText.OutlineColor = visuals.health.outline.color
+
+			drawings.healthOutline.ZIndex = drawings.health.ZIndex - 1
+
+			drawings.distance.Text = `[ {math.floor(data.distance)} ]`
+			drawings.distance.Size = math.max(math.min(math.abs(11 * scale), 11), 10)
+			drawings.distance.Position = Vector2.new(x, (yPostion + height) + (drawings.distance.TextBounds.Y * 0.25))
+			drawings.distance.Color = color(visuals.distance.color)
+			drawings.distance.Outline = visuals.distance.outline.enabled
+			drawings.distance.OutlineColor = visuals.distance.outline.color
+
+			drawings.weapon.Text = `[ {weapon} ]`
+			drawings.weapon.Size = math.max(math.min(math.abs(11 * scale), 11), 10)
+			drawings.weapon.Position = visuals.distance.enabled and Vector2.new(drawings.distance.Position.x, drawings.distance.Position.Y + (drawings.weapon.TextBounds.Y * 0.75)) or drawings.distance.Position
+			drawings.weapon.Color = color(visuals.weapon.color)
+			drawings.weapon.Outline = visuals.weapon.outline.enabled
+			drawings.weapon.OutlineColor = visuals.weapon.outline.color
+
+			drawings.headcircles.Radius = scale
+			drawings.headcircles.Position =  Vector2.new(hx,hy)  --Vector2.new(x, y - (drawings.headcircles.Radius * 1.5))
+			drawings.headcircles.ZIndex = 2
+			drawings.headcircles.Color = visuals.headcircles.color
+			drawings.headcircles.Thickness = 1
+
+			drawings.headcirclesoutline.Radius = scale
+			drawings.headcirclesoutline.Position =  Vector2.new(hx,hy)
+			drawings.headcirclesoutline.ZIndex = 1
+			drawings.headcirclesoutline.Color = visuals.headcircles.outline.color
+			drawings.headcirclesoutline.Thickness = 2
+
+			drawings.tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y - (Camera.ViewportSize.Y))
+			drawings.tracer.To = Vector2.new(hx,hy)
+			drawings.tracer.ZIndex = 2
+			drawings.tracer.Color = visuals.tracers.color
+
+			drawings.traceroutline.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y - (Camera.ViewportSize.Y))
+			drawings.traceroutline.To = Vector2.new(hx,hy)
+			drawings.traceroutline.ZIndex = 1
+			drawings.traceroutline.Color = visuals.tracers.outline.color
+			drawings.traceroutline.Thickness = 2
+		else
+			drawings.box.Visible = false
+			drawings.boxFilled.Visible = false
+			drawings.boxOutline.Visible = false
+			drawings.name.Visible = false
+			drawings.health.Visible = false
+			drawings.healthOutline.Visible = false
+			drawings.healthText.Visible = false
+			drawings.distance.Visible = false
+			drawings.weapon.Visible = false
+			drawings.headcircles.Visible = false
+			drawings.headcirclesoutline.Visible = false
+			drawings.tracer.Visible = false
+			drawings.traceroutline.Visible = false
+		end
+
+		if Character then
+			drawings.box.Visible = (check() and visible and visuals.boxes.enabled) or false
+			drawings.boxFilled.Visible = (check() and drawings.box.Visible and visuals.boxes.filled.enabled) or false
+			drawings.boxOutline.Visible = (check() and drawings.box.Visible and visuals.boxes.outline.enabled) or false
+			drawings.name.Visible = (check() and visible and visuals.names.enabled) or false
+			drawings.health.Visible = (check() and visible and visuals.health.enabled) or false
+			drawings.healthOutline.Visible = (check() and drawings.health.Visible and visuals.health.outline.enabled) or false
+			drawings.healthText.Visible = (check() and drawings.health.Visible and visuals.health.text.enabled) or false
+			drawings.distance.Visible = (check() and visible and visuals.distance.enabled) or false
+			drawings.weapon.Visible = (check() and visible and visuals.weapon.enabled) or false
+			drawings.headcircles.Visible = (check() and visible and visuals.headcircles.enabled) or false
+			drawings.headcirclesoutline.Visible = (check() and drawings.headcircles.Visible and visuals.headcircles.outline.enabled) or false
+			drawings.tracer.Visible = (check() and visible and visuals.tracers.enabled) or false
+			drawings.traceroutline.Visible = (check() and drawings.tracer.Visible and visuals.tracers.outline.enabled) or false
+		else
+			drawings.box.Visible = false
+			drawings.boxFilled.Visible = false
+			drawings.boxOutline.Visible = false
+			drawings.name.Visible = false
+			drawings.health.Visible = false
+			drawings.healthOutline.Visible = false
+			drawings.healthText.Visible = false
+			drawings.distance.Visible = false
+			drawings.weapon.Visible = false
+			drawings.headcircles.Visible = false
+			drawings.headcirclesoutline.Visible = false
+			drawings.tracer.Visible = false
+			drawings.traceroutline.Visible = false
+		end
+	end)
+end
+
+declare(get("player"), "loop", get("loop"):new(function ()
+	for character, data in get("player").cache do
+		get("player"):update(character, data)
+	end
+end), true)
+
+declare(global, "features", {})
+
+features.toggle = function(self, feature, boolean)
+	if self[feature] then
+		if boolean == nil then
+			self[feature].enabled = not self[feature].enabled
+		else
+			self[feature].enabled = boolean
+		end
+
+		if self[feature].toggle then
+			task.spawn(function()
+				self[feature]:toggle()
+			end)
+		end
+	end
+end
+
+declare(features, "visuals", {
+	["enabled"] = false,
+	["teamCheck"] = true,
+	["teamColor"] = false,
+	["renderDistance"] = 200,
+
+	["boxes"] = {
+		["enabled"] = false,
+		["color"] = Color3.fromRGB(255, 255, 255),
+		["outline"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(0, 0, 0),
+		},
+		["filled"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(255, 255, 255),
+			["transparency"] = 0.25
+		},
+	},
+	["names"] = {
+		["enabled"] = false,
+		["color"] = Color3.fromRGB(255, 255, 255),
+		["outline"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(0, 0, 0),
+		},
+	},
+	["health"] = {
+		["enabled"] = false,
+		["color"] = Color3.fromRGB(0, 255, 0),
+		["colorLow"] = Color3.fromRGB(255, 0, 0),
+		["outline"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(0, 0, 0)
+		},
+		["text"] = {
+			["enabled"] = false,
+			["outline"] = {
+				["enabled"] = true,
+			},
+		}
+	},
+	["distance"] = {
+		["enabled"] = false,
+		["color"] = Color3.fromRGB(255, 255, 255),
+		["outline"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(0, 0, 0),
+		},
+	},
+	["weapon"] = {
+		["enabled"] = false,
+		["color"] = Color3.fromRGB(255, 255, 255),
+		["outline"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(0, 0, 0),
+		},
+	},
+	["headcircles"] = {
+		["enabled"] = false,
+		["color"] = Color3.fromRGB(255, 255, 255),
+		["outline"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(0, 0, 0),
+		}
+	},
+	["tracers"] = {
+		["enabled"] = false,
+		["color"] = Color3.fromRGB(255, 255, 255),
+		["outline"] = {
+			["enabled"] = true,
+			["color"] = Color3.fromRGB(0, 0, 0),
+		}
+	},
+})
+
+for _, player in Players:GetPlayers() do
+	if player ~= LocalPlayer and not get("player"):find(player) then
+		get("player"):new(player)
+	end
+end
+
+declare(get("player"), "added", Players.PlayerAdded:Connect(function(player)
+	get("player"):new(player)
+end), true)
+
+declare(get("player"), "removing", Players.PlayerRemoving:Connect(function(player)
+	get("player"):remove(player)
+end), true)
+
+task.wait(1)
+
+warn("[INERTIA.MOV] Loading Bypasses...")local a;a=hookmetamethod(game,'__index',function(b,c)if(b==Humanoid and c=='WalkSpeed')then return 14 end;if(b==Humanoid and c=='JumpPower')then return 20 end;return a(b,c)end)local a={}local b;for b,b in pairs(getgc(true))do if type(b)=="table"and rawget(b,"Name")then if not a[b.Name]then a[b.Name]={}end;for c,d in pairs(b)do if type(d)=="number"then a[b.Name][c]=d end end end end;local c=nil;local function d()for a,a in ipairs(workspace.ViewModels.FirstPerson:GetChildren())do if a:IsA("Model")and string.find(a.Name,game:GetService("Players").LocalPlayer.Name,1,true)==1 then c=a;return c end end end;local c;for a,a in next,getgc(false)do if(type(a)=='function'and not isexecutorclosure(a)and debug.getinfo(a).name=="SetCameraLean")then c=a end end;local c=require(game:GetService("Players").LocalPlayer.PlayerScripts.Modules.ClientReplicatedClasses.ClientFighter.ClientItem)local c=c.Input;local e;e=hookfunction(c,function(...)local a={...}if type(a[1])=="table"then b=a[1].Info.ProjectileSpeed end;return e(...)end)warn("[INERTIA.MOV] Loaded Bypassess")local c='https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'local e=loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Linoria'))()local f=loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/LinoriaTheme'))()local c=loadstring(game:HttpGet(c..'addons/SaveManager.lua'))()local g=e:CreateWindow({Title='Intertia | <font color=\"#00ff00\">Free</font> | Rivals',Center=true,AutoShow=true,TabPadding=8,MenuFadeTime=0.2})local g={Combat=g:AddTab('Combat'),Visuals=g:AddTab('Visuals'),Misc=g:AddTab('Misc'),['UI Settings']=g:AddTab('UI Settings')}local h=game:GetService("ReplicatedStorage")local i=game:GetService("Players")local j=game:GetService("Workspace")local k=game:GetService("Lighting")local l=j.CurrentCamera;local h=require(h.Modules.Utility)local m=game:GetService("RunService")local n=Drawing.new("Circle")n.Radius=200;n.Thickness=1;n.ZIndex=2;n.Color=Color3.fromRGB(255,255,255)local o=Drawing.new("Circle")o.Radius=200;o.Thickness=2;o.ZIndex=1;o.Color=Color3.fromRGB(0,0,0)local p=Drawing.new("Line")p.Thickness=1;p.ZIndex=2;p.Color=Color3.fromRGB(255,255,255)local q=Drawing.new("Line")q.Thickness=2;q.ZIndex=1;q.Color=Color3.fromRGB(0,0,0)local r=Drawing.new("Circle")r.Radius=5;r.Thickness=1;r.ZIndex=2;r.Color=Color3.fromRGB(255,255,255)local s=Drawing.new("Circle")s.Radius=5;s.Thickness=2;s.ZIndex=1;s.Color=Color3.fromRGB(0,0,0)local t={["Bow"]={"Compound Bow","Raven Bow"},["Assault Rifle"]={"AK-47","AUG"},["Chainsaw"]={"Blobsaw","Handsaws"},["RPG"]={"Nuke Launcher","RPKEY","Spaceship Launcher"},["Burst Rifle"]={"Aqua Burst","Electro Rifle"},["Exogun"]={"Singularity","Wondergun"},["Fists"]={"Boxing Gloves","Brass Knuckles"},["Flamethrower"]={"Lamethrower","Pixel Flamethrower"},["Flare Gun"]={"Dynamite Gun","Firework Gun"},["Freeze Ray"]={"Bubble Ray","Temporal Ray"},["Grenade"]={"Water Balloon","Whoopee Cushion"},["Grenade Launcher"]={"Swashbuckler","Uranium Launcher"},["Handgun"]={"Blaster"},["Katana"]={"Lightning Bolt","Saber"},["Minigun"]={"Lasergun 3000","Pixel Minigun"},["Paintball Gun"]={"Boba Gun","Slime Gun"},["Revolver"]={"Sheriff"},["Slingshot"]={"Goalpost","Stick"},["Subspace Tripmine"]={"Don't Press","Spring"},["Uzi"]={"Electro Uzi","Water Uzi"},["Sniper"]={"Pixel Sniper","Hyper Sniper"},["Knife"]={"Karambit","Chancla"}}local u={Default={"91458024","91457980","91458024","91458024","91458024","91458002"},Neptune={"218955819","218953419","218954524","218958493","218957134","218950090"},["Among Us"]={"5752463190","5752463190","5752463190","5752463190","5752463190","5752463190"},Nebula={"159454299","159454296","159454293","159454286","159454300","159454288"},Vaporwave={"1417494030","1417494146","1417494253","1417494402","1417494499","1417494643"},Clouds={"570557514","570557775","570557559","570557620","570557672","570557727"},Twilight={"264908339","264907909","264909420","264909758","264908886","264907379"},DaBaby={"7245418472","7245418472","7245418472","7245418472","7245418472","7245418472"},Minecraft={"1876545003","1876544331","1876542941","1876543392","1876543764","1876544642"},Chill={"5084575798","5084575916","5103949679","5103948542","5103948784","5084576400"},Redshift={"401664839","401664862","401664960","401664881","401664901","401664936"},["Deep Space"]={"149397684","149397686","149397688","149397692","149397697","149397702"},["Winter"]={"510645155","510645130","510645179","510645117","510645146","510645195"}}local v={Default={"91458024","91457980","91458024","91458024","91458024","91458002"}}local w={Ambient=game:GetService("Lighting").Ambient,OutdoorAmbient=game:GetService("Lighting").OutdoorAmbient,Brightness=game:GetService("Lighting").Brightness,Clocktime=game:GetService("Lighting").ClockTime}local x={Silent={Enabled=false,TargetPart="Head",HitChance=100,TeamCheck=false,HealthCheck=false,VisibleCheck=false,Snapline=false,Snapcircle=false,SnaplineColor=Color3.fromRGB(255,255,255),SnapcircleColor=Color3.fromRGB(255,255,255),VisibleText=false,Fov=false,Dynamic=false,Radius=200,Color=Color3.fromRGB(255,255,255)},Player={Enabled=false,WalkSpeed=false,Speed=16,JumpPower=false,Power=16,NoCameraLean=false,WeaponChams=false,Color=Color3.fromRGB(255,255,255),Material="Neon",Transparency=0},GunMods={NoRecoil=false,NoSpread=false,FastFire=false},World={Enabled=false,Ambient=Color3.fromRGB(255,255,255),OutdoorAmbient=Color3.fromRGB(255,255,255),Brightness=3,GlobalShadows=false,ClockTime=12}}local y=g.Combat:AddLeftGroupbox('Silent Aim')local z=g.Combat:AddRightGroupbox('FOV')local A=g.Combat:AddLeftGroupbox('HBE(COMING SOON)')local A=g.Visuals:AddLeftGroupbox('Main')local B=g.Visuals:AddRightGroupbox('Settings')local C=g.Visuals:AddRightGroupbox('World')local D=g.Misc:AddLeftGroupbox('Player')local E=g.Misc:AddLeftGroupbox('Gun Mods')local F=g.Misc:AddRightGroupbox('Skin Changer')local G={}local H=game:GetService("Players").LocalPlayer.Name;local H=game:GetService("Players").LocalPlayer.PlayerScripts.Assets.ViewModels;function swapWeaponSkins(a,b,c)if not a then return end;local d=H:FindFirstChild(a)if not d then return end;if c then if b then local b=H:FindFirstChild(b)if not b then return end;d:ClearAllChildren()for a,a in pairs(b:GetChildren())do local a=a:Clone()a.Parent=d end;G[a]=true end else G[a]=nil end end;local function G(a)local b;if a=="Default"then b=v.Default else b=u[a]end;if b then for a,c in ipairs({"SkyboxBk","SkyboxDn","SkyboxFt","SkyboxLf","SkyboxRt","SkyboxUp"})do if k:FindFirstChild("Sky")then k:FindFirstChild("Sky")[c]="rbxassetid://"..b[a]end end end end;for a,b in pairs(t)do F:AddDropdown(a..'Dropdown',{Values=b,Default=1,Multi=false,Text=a..' Skins',Tooltip='Select a skin for '..a,Callback=function(b)swapWeaponSkins(a,b,true)end})end;local function t()local a={}for b,b in j:GetChildren()do if b:FindFirstChildOfClass("Humanoid")then table.insert(a,b)elseif b.Name=="HurtEffect"then for b,b in b:GetChildren()do if b.ClassName~="Highlight"then table.insert(a,b)end end end end;return a end;local function j(a)local b,c=nil,math.huge;local d=i.LocalPlayer.Character;if not d then return end;for e,e in t()do if e==i.LocalPlayer then continue end;if not e:FindFirstChild("HumanoidRootPart")then continue end;local f,g=l:WorldToViewportPoint(e.HumanoidRootPart.Position)if not g then continue end;if x.Silent.TeamCheck and d.HumanoidRootPart:FindFirstChild("TeammateLabel")then return end;local d=Vector2.new(l.ViewportSize.X/2,l.ViewportSize.Y/2)local f=Vector2.new(f.X,f.Y)local d=(d-f).Magnitude;if d>a then continue end;if d<c then b=e;c=d end end;return b end;local function i(b,c)for d,d in pairs(getgc(true))do if type(d)=="table"and rawget(d,"Name")and rawget(d,b)then if not a[d.Name]then saveOldStats()end;d[b]=c;for a,b in pairs(d)do warn(a,b)end end end end;local function t(b)for c,c in pairs(getgc(true))do if type(c)=="table"and rawget(c,"Name")and a[c.Name]then if b then if a[c.Name][b]then c[b]=a[c.Name][b]end else for a,b in pairs(a[c.Name])do c[a]=b end end end end end;D:AddToggle('PLayerEnabled',{Text='Enabled',Default=false,Tooltip='enables humaNOID MODS',Callback=function(a)x.Player.Enabled=a end})D:AddToggle('WalkSpeed',{Text='Walk Speed',Default=false,Tooltip='walk speed',Callback=function(a)x.Player.WalkSpeed=a end})D:AddSlider('Speed',{Text='Speed',Default=11,Min=0,Max=100,Rounding=1.0,Compact=true,Callback=function(a)x.Player.Speed=a end})D:AddToggle('WalkSpeed',{Text='Jump Power',Default=false,Tooltip='walk speed',Callback=function(a)x.Player.JumpPower=a end})D:AddSlider('Speed',{Text='Speed',Default=11,Min=0,Max=100,Rounding=1.0,Compact=true,Callback=function(a)x.Player.Power=a end})D:AddToggle('WeaponChams',{Text='Weapon Chams',Default=false,Tooltip='weapon chams',Callback=function(a)x.Player.WeaponChams=a end}):AddColorPicker('WeaponCoolr',{Default=Color3.fromRGB(136,8,8),Title='Color',Transparency=0,Callback=function(a)x.Player.Color=a end})D:AddDropdown('WepanMat',{Values={'Neon','ForceField'},Default=1,Multi=false,Text='Skybox',Tooltip='This is a tooltip',Callback=function(a)x.Player.Material=a end})D:AddSlider('WepaonTrans',{Text='Transparency',Default=0.5,Min=0,Max=1,Rounding=1.0,Compact=true,Callback=function(a)x.Player.Transparency=a end})C:AddToggle('WorldEnabled',{Text='Enabled',Default=false,Tooltip='enables world settings',Callback=function(a)x.World.Enabled=a end})C:AddLabel('Ambient'):AddColorPicker('AmbientColor',{Default=Color3.fromRGB(136,8,8),Title='Ambient',Transparency=0,Callback=function(a)x.World.Ambient=a end})C:AddLabel('Outdoor Ambient'):AddColorPicker('OutdoorAmbientColor',{Default=Color3.fromRGB(136,8,8),Title='Outdoor Ambient',Transparency=0,Callback=function(a)x.World.OutdoorAmbient=a end})C:AddSlider('Brightness',{Text='Brightness',Default=3,Min=0,Max=10,Rounding=1.0,Compact=true,Callback=function(a)x.World.Brightness=a end})C:AddSlider('CLockTIme',{Text='Clock Time',Default=12,Min=-12,Max=12,Rounding=1.0,Compact=true,Callback=function(a)x.World.ClockTime=a end})C:AddDropdown('Skybox',{Values={'Default','Neptune','Among Us','Nebula','Vaporwave','Clouds','Twilight','DaBaby','Minecraft','Chill','Redshift','Blue Stars','Blue Aurora'},Default=1,Multi=false,Text='Skybox',Tooltip='This is a tooltip',Callback=function(a)G(a)end})E:AddToggle('NoRecoil',{Text='No Recoil',Default=false,Tooltip='no recoil',Callback=function(a)if a then i("ShootRecoil",0)else t("ShootRecoil")end end})E:AddToggle('NoSpread',{Text='No Spread',Default=false,Tooltip='no spread',Callback=function(a)if a then i("ShootSpread",0)else t("ShootSpread")end end})E:AddToggle('FastFire',{Text='Fast Fire',Default=false,Tooltip='fast fire',Callback=function(a)if a then i("ShootCooldown",0.025)else t("ShootCooldown")end end})A:AddToggle('ESPToggle',{Text='Enabled',Default=false,Tooltip='Enables ESP',Callback=function(a)features.visuals.enabled=a end})A:AddToggle('ESPBOXToggle',{Text='Boxes',Default=false,Tooltip='Enables Box',Callback=function(a)features.visuals.boxes.enabled=a end}):AddColorPicker('FOVColor',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.boxes.color=a end})A:AddToggle('Skeletons',{Text='Skeletons',Default=false,Tooltip='Enables Box',Callback=function(a)skeletons.enabled=a end}):AddColorPicker('skeletonscolor',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)skeletons.color=a end})A:AddToggle('ESPFilledToggle',{Text='Filled',Default=true,Tooltip='Enables Filled Boxes',Callback=function(a)features.visuals.boxes.filled.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.boxes.filled.color=a end})A:AddToggle('ESPNameToggle',{Text='Names',Default=false,Tooltip='Enables Names',Callback=function(a)features.visuals.names.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.names.color=a end})A:AddToggle('FOV',{Text='Health',Default=false,Tooltip='Enables Healthbars',Callback=function(a)features.visuals.health.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(0,0.666667,0),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.health.color=a end}):AddColorPicker('Filled',{Default=Color3.new(1,0,0),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.health.colorLow=a end})A:AddToggle('ESPHealthTextToggle',{Text='Health Text',Default=false,Tooltip='Enables Health Text',Callback=function(a)features.visuals.health.text.enabled=a end})A:AddToggle('ESPDistanceTextToggle',{Text='Distance',Default=false,Tooltip='Enables Distance Text',Callback=function(a)features.visuals.distance.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.distance.color=a end})A:AddToggle('ESPWeaponTextToggle',{Text='Weapon',Default=false,Tooltip='Enables Weapon Text',Callback=function(a)features.visuals.weapon.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.weapon.color=a end})A:AddToggle('ESPHeadCirclesToggle',{Text='Head Circles',Default=false,Tooltip='Enables Head Circles',Callback=function(a)features.visuals.headcircles.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.headcircles.color=a end})A:AddToggle('ESPTracersToggle',{Text='Tracers',Default=false,Tooltip='Enables Tracers',Callback=function(a)features.visuals.tracers.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.tracers.color=a end})A:AddDropdown('HitPart',{Values={'Bottom','Top','Middle','Mouse'},Default=2,Multi=false,Text='Tracer Orgin',Tooltip='Enables Tracer Orgin',Callback=function(a)features.visuals.tracers.origin=a end})B:AddToggle('ESPTeamCheckToggle',{Text='Team Check',Default=true,Tooltip='Enables Team Check',Callback=function(a)features.visuals.teamCheck=a end})B:AddSlider('ESPMaxDistanceSliderToggle',{Text='Max Distance',Default=200,Min=0,Max=1000,Rounding=1.0,Compact=true,Callback=function(a)features.visuals.renderDistance=a end})y:AddToggle('SilentEnabled',{Text='Enabled',Default=false,Tooltip='Enables Silent Aim',Callback=function(a)x.Silent.Enabled=a end})y:AddToggle('SilentAimTeamCheckToggle',{Text='Team Check',Default=false,Tooltip='Enables Team Check',Callback=function(a)x.Silent.TeamCheck=a end})y:AddToggle('SilentAimHealthCheckToggle',{Text='Health Check',Default=false,Tooltip='Enables Health Check',Callback=function(a)x.Silent.HealthCheck=a end})y:AddToggle('SilentAimVisibleCheckToggle',{Text='Visible Check',Default=false,Tooltip='Enables Visible Check',Callback=function(a)x.Silent.VisibleCheck=a end})y:AddSlider('HitChance',{Text='Hit Chance',Default=100,Min=0,Max=100,Rounding=1.0,Compact=true,Callback=function(a)x.Silent.HitChance=a end})y:AddDropdown('HitPart',{Values={'Head','HumanoidRootPart'},Default=1,Multi=false,Text='Hit Part',Tooltip='Hit part of the silent aim',Callback=function(a)x.Silent.TargetPart=a end})z:AddToggle('SilentAimFOVToggle',{Text='Enabled',Default=false,Tooltip='Enables silent aim FOV',Callback=function(a)x.Silent.Fov=a end}):AddColorPicker('FOVColor',{Default=Color3.new(1,1,1),Title='FOV Color',Transparency=0,Callback=function(a)x.Silent.Color=a end})z:AddToggle('Dynamic',{Text='Dynamic',Default=false,Tooltip='Enables dynamic FOV',Callback=function(a)x.Silent.Dynamic=a end})z:AddToggle('SilentAimSnapLineToggle',{Text='Snapline',Default=false,Tooltip='Enables Snapline',Callback=function(a)x.Silent.Snapline=a end}):AddColorPicker('SnapLineColor',{Default=Color3.new(1,1,1),Title='Snapline Color',Transparency=0,Callback=function(a)x.Silent.SnaplineColor=a end})z:AddToggle('SilentAimCircleToggle',{Text='Snapcircle',Default=false,Tooltip='Enables Snapcircle',Callback=function(a)x.Silent.Snapcircle=a end}):AddColorPicker('SnapcircleColor',{Default=Color3.new(1,1,1),Title='Snapcircle Color',Transparency=0,Callback=function(a)x.Silent.SnapcircleColor=a end})z:AddSlider('Radius',{Text='Radius',Default=200,Min=0,Max=2000,Rounding=1.0,Compact=true,Callback=function(a)x.Silent.Radius=a end})local a=h.Raycast;h.Raycast=function(...)local c={...}if#c>0 and c[4]==999 and math.random(0,100)<=x.Silent.HitChance and x.Silent.Enabled then local a=j(x.Silent.Radius)if a then local d=a[x.Silent.TargetPart].Position;local e=a[x.Silent.TargetPart].AssemblyLinearVelocity;local d=(d-game.Workspace.CurrentCamera.CFrame.p).Magnitude;local b=d/b;local b=196.2;local a=a[x.Silent.TargetPart].Position;c[3]=a end end;return a(unpack(c))end;m.RenderStepped:Connect(function()if x.Silent.Fov and x.Silent.Enabled then local a=x.Silent.Radius;if l.FieldOfView<70 then a=x.Silent.Radius*(70/l.FieldOfView)elseif l.FieldOfView>70 then a=x.Silent.Radius*(70/l.FieldOfView)end;n.Radius=math.floor(a)o.Radius=math.floor(a)n.Position=Vector2.new(l.ViewportSize.X/2,l.ViewportSize.Y/2)o.Position=Vector2.new(l.ViewportSize.X/2,l.ViewportSize.Y/2)n.Visible=true;o.Visible=true else n.Visible=false;o.Visible=false end;if x.Silent.Enabled then local a=j(x.Silent.Radius)if a and a:FindFirstChild("Head")then local a,b=l:WorldToViewportPoint(a.Head.Position)if b then local a,b=math.floor(a.X),math.floor(a.Y)if x.Silent.Snapline then p.From=Vector2.new(l.ViewportSize.X/2,l.ViewportSize.Y/2)p.To=Vector2.new(a,b)p.Color=x.Silent.SnaplineColor;q.From=Vector2.new(l.ViewportSize.X/2,l.ViewportSize.Y/2)q.To=Vector2.new(a,b)q.Color=Color3.fromRGB(0,0,0)p.Visible=true;q.Visible=true else p.Visible=false;q.Visible=false end;if x.Silent.Snapcircle then r.Position=Vector2.new(a,b)r.Color=x.Silent.SnapcircleColor;r.Visible=true;s.Position=Vector2.new(a,b)s.Color=Color3.fromRGB(0,0,0)s.Visible=true else r.Visible=false;s.Visible=false end else p.Visible=false;q.Visible=false;r.Visible=false;s.Visible=false end else p.Visible=false;q.Visible=false;r.Visible=false;s.Visible=false end else p.Visible=false;q.Visible=false;r.Visible=false;s.Visible=false end;if x.World.Enabled then k.Brightness=x.World.Brightness;k.Ambient=x.World.Ambient;k.OutdoorAmbient=x.World.OutdoorAmbient;k.ClockTime=x.World.ClockTime else k.Brightness=w.Brightness;k.Ambient=w.Ambient;k.OutdoorAmbient=w.OutdoorAmbient;k.ClockTime=w.ClockTime end;if x.Player.WeaponChams then local a=d()print(a)if a then for a,a in pairs(a:GetDescendants())do if a.ClassName=="MeshPart"or a.ClassName=="Part"then a.Material=x.Player.Material;a.Transparency=x.Player.Transparency;a.Color=x.Player.Color end end end end end)LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()if x.Player.Enabled then if x.Player.WalkSpeed then game:GetService("Players").LocalPlayer.Character.Humanoid.WalkSpeed=x.Player.Speed;print(game:GetService("Players").LocalPlayer.Character.Humanoid.WalkSpeed)end end end)LocalPlayer.Character.Humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()if x.Player.Enabled then if x.Player.JumpPower then game:GetService("Players").LocalPlayer.Character.Humanoid.JumpPower=x.Player.Power end end end)e:SetWatermarkVisibility(true)local a=tick()local b=0;local d=60;local a=game:GetService('RunService').RenderStepped:Connect(function()b+=1;if(tick()-a)>=1 then d=b;a=tick()b=0 end;e:SetWatermark(('Inertia | Free | %s fps | %s ms'):format(math.floor(d),math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())))end)e.KeybindFrame.Visible=true;e:OnUnload(function()a:Disconnect()print('Unloaded!')e.Unloaded=true end)local a=g['UI Settings']:AddLeftGroupbox('Menu')a:AddLabel('Made by: Zyai, The')a:AddButton('Copy Discord',function()setclipboard("https://discord.gg/J7A8pzqPYE")end)a:AddButton('Unload',function()e:Unload()end)a:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind',{Default='End',NoUI=true,Text='Menu keybind'})e.ToggleKeybind=Options.MenuKeybind;f:SetLibrary(e)c:SetLibrary(e)c:IgnoreThemeSettings()c:SetIgnoreIndexes({'MenuKeybind'})f:SetFolder('MyScriptHub')c:SetFolder('MyScriptHub/specific-game')c:BuildConfigSection(g['UI Settings'])f:ApplyToTab(g['UI Settings'])c:LoadAutoloadConfig()e:Notify(("Welcome to Inertia.Mov "..game.Players.LocalPlayer.Name.." 👋"),6)e:Notify(("Status: 🟢 - Undetected (Safe to use)"),6)local a=function(a,b,c)local d=a:IsFriendsWith(game.Players.LocalPlayer.UserId)and"Notification - Friend"or"Notification - Player"e:Notify(("%s | User: %s | %s"):format(d,a.DisplayName,b),d=="Notification - Friend"and 6 or 3,c)end;game.Players.PlayerAdded:Connect(function(b)a(b,"Joined",Color3.fromRGB(0,255,0))end)game.Players.PlayerRemoving:Connect(function(b)a(b,"Left",Color3.fromRGB(255,0,0))end)warn("[INERTIA.MOV] Finished Loading!")

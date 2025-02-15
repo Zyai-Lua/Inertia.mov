@@ -12,6 +12,10 @@ elseif game.PlaceId == 17625359962 then
   loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Rivals"))()
   wait()
   warn("Loaded! Enjoy.")
+elseif game.PlaceId == 13083893317 then
+  loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/LifeSentence"))()
+  wait()
+  warn("Loaded! Enjoy.")
   else
   warn("Loading Weaponary Free")
   loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNation"))()

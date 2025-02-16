@@ -193,8 +193,7 @@ task.spawn(function()
 	end
 
     LocalPlayer.Idled:Connect(function()
-		    VirtualUser:CaptureController()
-		    VirtualUser:ClickButton2(Vector2.new())
-		end)
-	end
+		VirtualUser:CaptureController()
+		VirtualUser:ClickButton2(Vector2.new())
+	end)
 end)

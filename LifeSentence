@@ -6,6 +6,7 @@ getgenv().EmergencyStop = false
 local Players = cloneref(game:GetService("Players"))
 local RunService = cloneref(game:GetService("RunService"))
 local ReplicatedStorage = cloneref(game:GetService("ReplicatedStorage"))
+local VirtualUser = cloneref(game:GetService("VirtualUser"))
 
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -19,6 +20,9 @@ local StartButton = JobFrame.StartButton
 local ExitButton = JobFrame.ExitButton
 
 local LaundryTableCFrame = CFrame.new(777.9755859375, 8.102447509765625, -101.28254699707031)
+
+local oldhmmi;
+local oldhmmnc;
 
 local EndJobArgs = {
 	[1] = "StartEndJob",
@@ -164,4 +168,33 @@ task.spawn(function()
             Float:Destroy()
         end
     end)
+end)
+
+--anti afk, yall alr know what it IS! now watch me whip whip, now watch me nae nae
+task.spawn(function()
+    oldhmmi = hookmetamethod(game, "__index", function(self, method)
+			if self == LocalPlayer and method:lower() == "kick" then
+				return error("Expected ':' not '.' calling member function Kick", 2)
+			end
+		return oldhmmi(self, method)
+	end)
+
+	oldhmmnc = hookmetamethod(game, "__namecall", function(self, ...)
+			if self == LocalPlayer and getnamecallmethod():lower() == "kick" then
+				return
+			end
+	    return oldhmmnc(self, ...)
+    end)
+
+	for index, value in next, getconnections(LocalPlayer.Idled) do
+		if value then
+			value.Disable()
+		end
+	end
+
+    LocalPlayer.Idled:Connect(function()
+		    VirtualUser:CaptureController()
+		    VirtualUser:ClickButton2(Vector2.new())
+		end)
+	end
 end)

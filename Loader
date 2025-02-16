@@ -26,7 +26,7 @@ elseif game.PlaceId == 13083893317 then
   wait()
   warn("Loaded! Enjoy.")
   else
-  warn("Loading Weaponary Free")
+  warn("Loading Hoop Nation Free")
   loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNation"))()
   wait()
   warn("Loaded! Enjoy.")

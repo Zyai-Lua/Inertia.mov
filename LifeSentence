@@ -1,6 +1,6 @@
 repeat task.wait() until game:IsLoaded()
 
-getgenv().LaundryAutofarm = true
+getgenv().LaundryAutofarm = true 
 getgenv().EmergencyStop = false
 
 local Players = cloneref(game:GetService("Players"))
@@ -164,7 +164,10 @@ task.spawn(function()
         if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character.HumanoidRootPart and getgenv().LaundryAutofarm then
             Float.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, FloatValue, 0)
         else
-            FloatingFunc:Disconnect()
+            if FloatingFunc then
+                FloatingFunc:Disconnect()
+                FloatingFunc = nil
+            end
             Float:Destroy()
         end
     end)

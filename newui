@@ -3527,3 +3527,4 @@ do -- fade out & blur
         end
     end)    
 end
+return library

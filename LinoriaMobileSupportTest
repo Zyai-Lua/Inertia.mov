@@ -162,44 +162,54 @@ function Library:CreateLabel(Properties, IsHud)
     return Library:Create(_Instance, Properties);
 end;
 
-function Library:MakeDraggable(Instance, Cutoff)
-	Instance.Active = true
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
-	local dragging, ObjPos, TouchInput
+function Library:MakeDraggable(Instance, Cutoff) -- shout out to my king ChatGPT
+    Instance.Active = true
 
-	Instance.InputBegan:Connect(function(Input)
-		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-			ObjPos = Vector2.new(
-				Input.Position.X - Instance.AbsolutePosition.X,
-				Input.Position.Y - Instance.AbsolutePosition.Y
-			)
+    local dragging, ObjPos, InputObject
 
-			if ObjPos.Y > (Cutoff or 40) then
-				return
-			end
+    Instance.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+            ObjPos = Vector2.new(
+                Input.Position.X - Instance.AbsolutePosition.X,
+                Input.Position.Y - Instance.AbsolutePosition.Y
+            )
 
-			dragging = true
-			TouchInput = Input
-		end
-	end)
+            if ObjPos.Y > (Cutoff or 40) then
+                return
+            end
 
-	Instance.InputChanged:Connect(function(Input)
-		if dragging and (Input.UserInputType == Enum.UserInputType.MouseMovement or Input == TouchInput) then
-			Instance.Position = UDim2.new(
-				0,
-				Input.Position.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X),
-				0,
-				Input.Position.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
-			)
-		end
-	end)
+            dragging = true
+            InputObject = Input
 
-	Instance.InputEnded:Connect(function(Input)
-		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
+            local connection
+            connection = RunService.RenderStepped:Connect(function()
+                if not dragging then
+                    connection:Disconnect()
+                    return
+                end
+
+                local position = UserInputService:GetLastInputType() == Enum.UserInputType.Touch and InputObject.Position or UserInputService:GetMouseLocation()
+
+                Instance.Position = UDim2.new(
+                    0,
+                    position.X - ObjPos.X + (Instance.Size.X.Offset * Instance.AnchorPoint.X),
+                    0,
+                    position.Y - ObjPos.Y + (Instance.Size.Y.Offset * Instance.AnchorPoint.Y)
+                )
+            end)
+        end
+    end)
+
+    Instance.InputEnded:Connect(function(Input)
+        if Input == InputObject then
+            dragging = false
+        end
+    end)
 end
+
 
 
 function Library:AddToolTip(InfoStr, HoverInstance)

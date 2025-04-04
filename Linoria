@@ -713,12 +713,14 @@ do
 					(DisplayFrame.AbsolutePosition.X + DisplayFrame.AbsoluteSize.X) + 4,
 					DisplayFrame.AbsolutePosition.Y + 1
 				)
-				
+
+				local padding = 4
 				Image.Position = UDim2.fromOffset(
-					(DisplayFrame.AbsolutePosition.X + DisplayFrame.AbsoluteSize.X) + 4,
-					DisplayFrame.AbsolutePosition.Y + 1
+					ContextMenu.Container.Position.X.Offset - padding,
+					ContextMenu.Container.Position.Y.Offset - padding
 				)
 			end
+
 
 			local function updateMenuSize()
 				local menuWidth = 60
@@ -728,18 +730,17 @@ do
 					end
 				end
 
-				ContextMenu.Container.Size = UDim2.fromOffset(
-					menuWidth + 8,
-					ContextMenu.Inner.Layout.AbsoluteContentSize.Y + 4
-				)
-				print(Image.Size)
-				Image.Size = UDim2.fromOffset(
-					menuWidth + 8,
-					ContextMenu.Inner.Layout.AbsoluteContentSize.Y + 4
-				)
-				
+				local width = menuWidth + 8
+				local height = ContextMenu.Inner.Layout.AbsoluteContentSize.Y + 4
+
+				ContextMenu.Container.Size = UDim2.fromOffset(width, height)
+
+				local padding = 4
+				Image.Size = UDim2.fromOffset(width + padding * 2, height + padding * 2)
+
 				Image.Visible = true
 			end
+
 
 			DisplayFrame:GetPropertyChangedSignal('AbsolutePosition'):Connect(updateMenuPosition)
 			ContextMenu.Inner.Layout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(updateMenuSize)

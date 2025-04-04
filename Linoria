@@ -15,12 +15,6 @@ local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end);
 local ScreenGui = Instance.new('ScreenGui');
 ProtectGui(ScreenGui);
 
-local Image = Instance.new("ImageLabel")
-Image.Parent = ScreenGui
-Image.ZIndex = 0.1
-Image.Image = "http://www.roblox.com/asset/?id=6906809185"
-
-
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global;
 ScreenGui.Parent = CoreGui;
 
@@ -44,7 +38,7 @@ local Library = {
 	RiskColor = Color3.fromRGB(255, 50, 50),
 
 	Black = Color3.new(0, 0, 0);
-	Font = Enum.Font.Code,
+	Font = Enum.Font.Arcade,
 
 	OpenedFrames = {};
 	DependencyBoxes = {};
@@ -713,14 +707,7 @@ do
 					(DisplayFrame.AbsolutePosition.X + DisplayFrame.AbsoluteSize.X) + 4,
 					DisplayFrame.AbsolutePosition.Y + 1
 				)
-
-				local padding = 4
-				Image.Position = UDim2.fromOffset(
-					ContextMenu.Container.Position.X.Offset - padding,
-					ContextMenu.Container.Position.Y.Offset - padding
-				)
 			end
-
 
 			local function updateMenuSize()
 				local menuWidth = 60
@@ -730,17 +717,11 @@ do
 					end
 				end
 
-				local width = menuWidth + 8
-				local height = ContextMenu.Inner.Layout.AbsoluteContentSize.Y + 4
-
-				ContextMenu.Container.Size = UDim2.fromOffset(width, height)
-
-				local padding = 4
-				Image.Size = UDim2.fromOffset(width + padding * 2, height + padding * 2)
-
-				Image.Visible = true
+				ContextMenu.Container.Size = UDim2.fromOffset(
+					menuWidth + 8,
+					ContextMenu.Inner.Layout.AbsoluteContentSize.Y + 4
+				)
 			end
-
 
 			DisplayFrame:GetPropertyChangedSignal('AbsolutePosition'):Connect(updateMenuPosition)
 			ContextMenu.Inner.Layout:GetPropertyChangedSignal('AbsoluteContentSize'):Connect(updateMenuSize)

@@ -733,11 +733,8 @@ do
 					ContextMenu.Inner.Layout.AbsoluteContentSize.Y + 4
 				)
 				
-				Image.Size = UDim2.fromOffset(
-					menuWidth + 10,
-					ContextMenu.Inner.Layout.AbsoluteContentSize.Y + 10
-				)
-				
+				Image.Size = ContextMenu.Container.Size
+				print(Image.Size)
 				Image.Visible = true
 			end
 

@@ -2177,7 +2177,7 @@ else
         local SprintValue = LocalPlayer.Values.Sprinting
         local IsShootingValue = LocalPlayer.Values.Shooting
     
-        local button = Players.LocalPlayer.PlayerGui.Mobile.Offense.Shoot
+        local ShootButton = Players.LocalPlayer.PlayerGui.Mobile.Offense.Shoot
     
         local ShootRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
         local ShootFunction;
@@ -2527,7 +2527,7 @@ else
             end,
         })
     
-        Connections.AutoGreenConnection = button.MouseButton1Down:Connect(function()
+        Connections.AutoGreenConnection = ShootButton.Activated:Connect(function()
             if Settings.AutoGreen then
                 ShootRemote:FireServer(true, 100)
                 ShootRemote:FireServer(false, -0.99, true)

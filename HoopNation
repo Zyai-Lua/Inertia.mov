@@ -2533,6 +2533,15 @@ else
                 ShootRemote:FireServer(false, -0.99, true)
             end
         end)
+
+        UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+            if input.UserInputType == Enum.UserInputType.Gamepad1 then
+                if input.KeyCode == Enum.KeyCode.ButtonX and Settings.AutoGreen then
+                    ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(true, 100)  
+                    ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(false, -0.99, true)  
+                end
+            end
+        end)
     
         Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
             Character = newCharacter

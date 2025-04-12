@@ -2165,6 +2165,7 @@ else
         local RunService = game:GetService("RunService")
         --local VirtualInputManager = game:GetService("VirtualInputManager")
     
+        local LocalPlayer = Players.LocalPlayer
         local Character = LocalPlayer.Character
         local Humanoid = Character:FindFirstChildOfClass("Humanoid")
         local HumanoidRootPart = Character.HumanoidRootPart

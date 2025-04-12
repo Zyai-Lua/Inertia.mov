@@ -3,6 +3,7 @@ local result = identifyexecutor()
 local UIS = game:GetService("UserInputService")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UIS:GetPlatform())
 
+
 if string.find(result, "AWP") or string.find(result, "Swift") or string.find(result, "MacSploit") or string.find(result, "Wave") or string.find(result, "Potassium") or string.find(result, "Ronix") and not IsOnMobile then
 	local Players = game:GetService('Players');
 	local Workspace = game:GetService('Workspace');
@@ -2207,6 +2208,7 @@ else
             AutoGreenConnection = nil,
             DribblingGlide = nil,
             CharacterAddedConnection = nil,
+            ControllerInput = nil,
         }
         
         local Functions = {
@@ -2534,11 +2536,11 @@ else
             end
         end)
 
-        UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+        Connections.ControllerInput = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
             if input.UserInputType == Enum.UserInputType.Gamepad1 then
                 if input.KeyCode == Enum.KeyCode.ButtonX and Settings.AutoGreen then
-                    ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(true, 100)  
-                    ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(false, -0.99, true)  
+                    ShootRemote:FireServer(true, 100)
+                    ShootRemote:FireServer(false, -0.99, true)
                 end
             end
         end)

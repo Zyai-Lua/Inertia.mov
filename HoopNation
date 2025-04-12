@@ -48,7 +48,15 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 	local StealRTrack = humanoid:LoadAnimation(ReplicatedStorage.Animations.StealR) -- rbxassetid://16053995400
 	local HoldBallTrack = humanoid:LoadAnimation(ReplicatedStorage.Animations.HoldBall) -- rbxassetid://76191169643944
 	local BackflipTrack = humanoid:LoadAnimation(ReplicatedStorage.Animations.Backflip) -- rbxassetid://85268116174650
-
+	
+	local FadeawayKeybind = Enum.KeyCode.L
+	local BlockKeybind = Enum.KeyCode.B
+	local ChestPassKeybind = Enum.KeyCode.C
+	local JumpshotKeybind = Enum.KeyCode.J
+	local PassKeybind = Enum.KeyCode.P
+	local StealRKeybind = Enum.KeyCode.R
+	local HoldBallKeybind = Enum.KeyCode.H
+	local BackflipKeybind = Enum.KeyCode.F
 
 	local shirtNames = {}
 	local pantNames = {}
@@ -360,7 +368,14 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 		AutoGuard = nil,
 		UpdateSnapline = nil,
 		SpinbotConnection = nil,
+		CharacterAddedConnection = nil,
 	}
+	
+	Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+		Character = newCharacter
+		humanoid = newCharacter:WaitForChild("Humanoid")
+		HumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+	end)
 
 	local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
 
@@ -1626,6 +1641,12 @@ elseif string.find(result, "Xeno") or string.find(result, "Solara") then
 		UpdateSnapline = nil,
 		SpinbotConnection = nil,
 	}
+	
+	Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+		Character = newCharacter
+		humanoid = newCharacter:WaitForChild("Humanoid")
+		HumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+	end)
 
 	local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
 
@@ -2213,7 +2234,12 @@ else
 		
 		local ReplicatedStorage = game:GetService('ReplicatedStorage')
 		local UIS = game:GetService("UserInputService")
+		local Players = game:GetService("Players")
 		local Player = game.Players.LocalPlayer
+		local LocalPlayer = Players.LocalPlayer
+		local Character = LocalPlayer.Character
+		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+		local HumanoidRootPart = Character.HumanoidRootPart
 		local ScreenGui = Instance.new("ScreenGui")
 		local Button = Instance.new("TextButton")
 		
@@ -2357,6 +2383,12 @@ else
 		})
 		
 		local Connections = {}
+		
+		Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+			Character = newCharacter
+			humanoid = newCharacter:WaitForChild("Humanoid")
+			HumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+		end)
 		
 		local DribbleGlide = Tab:CreateToggle('DribbleGlideToggle', {
 			Text = 'Dribble Glide',

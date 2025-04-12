@@ -1299,7 +1299,7 @@ do
 							KeyPicker:DoClick()
 						end;
 					elseif Input.UserInputType == Enum.UserInputType.Keyboard then
-						if Input.KeyCode.Name == Key then
+						if Input.KeyCode.Name == Key and not InputService:GetFocusedTextBox() then
 							KeyPicker.Toggled = not KeyPicker.Toggled;
 							KeyPicker:DoClick()
 						end;

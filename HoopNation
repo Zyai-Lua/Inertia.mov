@@ -3,7 +3,6 @@ local result = identifyexecutor()
 local UIS = game:GetService("UserInputService")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UIS:GetPlatform())
 
-
 if string.find(result, "AWP") or string.find(result, "Swift") or string.find(result, "MacSploit") or string.find(result, "Wave") or string.find(result, "Potassium") or string.find(result, "Ronix") and not IsOnMobile then
 	local Players = game:GetService('Players');
 	local Workspace = game:GetService('Workspace');
@@ -2183,15 +2182,10 @@ else
         local ShootFunction;
         local Meter2Meter = LocalPlayer.Character.Meter2.Meter
 
-        local gc = getgc()
-        if type(gc) == "table" and gc > 0 then
-            for i,v in next, gc do
-                if (type(v) == 'function' and not isexecutorclosure(v) and debug.getinfo(v).name and debug.getinfo(v).name == "Shoot") then
-                    ShootFunction = v
-                end;
+        for i,v in next, getgc(false) do
+            if (type(v) == 'function' and not isexecutorclosure(v) and debug.getinfo(v).name and debug.getinfo(v).name == "Shoot") then
+                ShootFunction = v
             end;
-        else
-            print("getgc is not suppoted in your executor")
         end;
     
         local Courts = game.Workspace:FindFirstChild("Courts")

@@ -3,6 +3,7 @@ local result = identifyexecutor()
 local UIS = game:GetService("UserInputService")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UIS:GetPlatform())
 
+
 if string.find(result, "AWP") or string.find(result, "Swift") or string.find(result, "MacSploit") or string.find(result, "Wave") or string.find(result, "Potassium") or string.find(result, "Ronix") and not IsOnMobile then
 	local Players = game:GetService('Players');
 	local Workspace = game:GetService('Workspace');
@@ -2203,6 +2204,7 @@ else
             Speed = 11,
             PickupRange = false,
             Range = 1,
+            DribbleAmount = 1,
     
         }
     
@@ -2497,7 +2499,7 @@ else
                             task.wait(0.3)
                             local hrp = LocalPlayer.Character.HumanoidRootPart
                             local bodyVelocity = hrp.BodyVelocity
-                            local newval = Functions.increaseGreatestComponent(bodyVelocity.Velocity, Options.GlideAmount.Value)
+                            local newval = Functions.increaseGreatestComponent(bodyVelocity.Velocity, Settings.DribbleAmount)
     
                             while LocalPlayer.Values.Dribbling.Value == true do
                                 bodyVelocity.MaxForce = Vector3.new(99999, 0, 99999)
@@ -2516,6 +2518,18 @@ else
                     end
                 end
             end
+        })
+
+        local DribbleGlideSlider = Tab:CreateSlider({
+            Name = "Dribble Amount",
+            Range = {0.1, 10},
+            Increment = 1,
+            Suffix = "*",
+            CurrentValue = 11,
+            Flag = "DribbleAmountSlider",
+            Callback = function(Value)
+                Settings.DribbleAmount = Value
+            end,
         })
     
         Connections.AutoGreenConnection = button.MouseButton1Down:Connect(function()

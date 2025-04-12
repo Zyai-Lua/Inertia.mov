@@ -1254,11 +1254,13 @@ do
 				wait(0.2);
 
 				local Event;
-				Event = InputService.InputBegan:Connect(function(Input)
+				Event = InputService.InputBegan:Connect(function(Input, gameProcessedEvent)
 					local Key;
 
-					if Input.UserInputType == Enum.UserInputType.Keyboard and not InputService:GetFocusedTextBox() then
-						Key = Input.KeyCode.Name;
+					if Input.UserInputType == Enum.UserInputType.Keyboard then
+                        if not InputService:GetFocusedTextBox() and not gameProcessedEvent then
+                            Key = Input.KeyCode.Name;
+                        end
 					elseif Input.UserInputType == Enum.UserInputType.MouseButton1 then
 						Key = 'MB1';
 					elseif Input.UserInputType == Enum.UserInputType.MouseButton2 then

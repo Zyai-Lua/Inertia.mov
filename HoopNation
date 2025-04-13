@@ -2524,7 +2524,7 @@ else
             end,
         })
     
-        Connections.AutoGreenConnection = ShootButton.Activated:Connect(function()
+        Connections.AutoGreenConnection = ShootButton.MouseButton1Down:Connect(function()
             if Settings.AutoGreen then
                 ShootRemote:FireServer(true, 100)
                 ShootRemote:FireServer(false, -0.99, true)

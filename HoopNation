@@ -1344,18 +1344,14 @@ elseif string.find(result, "Xeno") or string.find(result, "Solara") then
 
 			if input.KeyCode == Enum.KeyCode.E and Toggles.AutoGreenToggle.Value then
 				if Options.AutoGreenTypeDropdown.Value == "Xeno" then
-
-					task.wait(0.40)
+					ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(true, 100)  
 					ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(false, -0.99, true)  
-					task.wait(0.40)
 				end
 			elseif input.UserInputType == Enum.UserInputType.Gamepad1 then
 				if input.KeyCode == Enum.KeyCode.ButtonX and Toggles.AutoGreenToggle.Value then
 					if Options.AutoGreenTypeDropdown.Value == "Remote" then
-
-						task.wait(0.40)
+						ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(true, 100)  
 						ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(false, -0.99, true)  
-						task.wait(0.40)
 					end
 				end
 			end
@@ -1707,9 +1703,8 @@ elseif string.find(result, "Xeno") or string.find(result, "Solara") then
 					if not Connections.MobileAutoGreenInput then
 						Connections.MobileAutoGreenInput = LocalPlayer.PlayerGui.Mobile.Offense.Shoot.MouseButton1down:Connect(function()
 							if Options.AutoGreenTypeDropdown.Value == "Xeno" then
-								task.wait(0.40)
+								ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(true, 100)
 								ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Shoot"):FireServer(false, -0.99, true)
-								task.wait(0.40)
 							end
 						end)
 					end

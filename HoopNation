@@ -1,3 +1,5 @@
+repeat task.wait() until game:IsLoaded()
+
 local result = identifyexecutor()
 
 local UIS = game:GetService("UserInputService")
@@ -19,10 +21,11 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 	local BasketballFolder = Workspace:FindFirstChild("Basketballs")
 	local Courts = Workspace:FindFirstChild("Courts")
 
-	local StaminaValue = LocalPlayer.Values:WaitForChild("Stamina", 10)
-	local AnklesValue = LocalPlayer.Values:WaitForChild("Ankles", 10)
-	local SprintValue = LocalPlayer.Values:WaitForChild("Sprinting", 10)
-	local IsShootingValue = LocalPlayer.Values:WaitForChild("Shooting", 10)
+    	local ValuesFolder = LocalPlayer:WaitForChild("Values", 10)
+    	local IsShootingValue = ValuesFolder:WaitForChild("Shooting", 10)
+	local StaminaValue = ValuesFolder:WaitForChild("Stamina", 10)
+	local AnklesValue = ValuesFolder:WaitForChild("Ankles", 10)
+	local SprintValue = ValuesFolder:WaitForChild("Sprinting", 10)
 
 	local ShootRemote = ReplicatedStorage.Events.Shoot
 	local ShootFunction; 
@@ -853,8 +856,8 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 							firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), true)
 							firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), false)
                         elseif string.find(result, "MacSploit") then
-                            firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 0)
-                            firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 1)
+                            firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart"), 0)
+                            firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart"), 1)
 						else
 							return
 						end

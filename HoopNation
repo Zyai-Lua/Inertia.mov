@@ -855,7 +855,7 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 						if target and not LocalPlayer.Values.Shooting.Value then
 							firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), true)
 							firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), false)
-                        elseif string.find(result, "MacSploit") then
+                        elseif string.find(result, "MacSploit") or string.find(result, "Swift") then
                             firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart"), 0)
                             firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart"), 1)
 						else

@@ -3,7 +3,6 @@ local result = identifyexecutor()
 local UIS = game:GetService("UserInputService")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UIS:GetPlatform())
 
-
 if string.find(result, "AWP") or string.find(result, "Swift") or string.find(result, "MacSploit") or string.find(result, "Wave") or string.find(result, "Potassium") or string.find(result, "Ronix") and not IsOnMobile then
 	local Players = game:GetService('Players');
 	local Workspace = game:GetService('Workspace');
@@ -20,10 +19,10 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 	local BasketballFolder = Workspace:FindFirstChild("Basketballs")
 	local Courts = Workspace:FindFirstChild("Courts")
 
-	local StaminaValue = LocalPlayer.Values.Stamina
-	local AnklesValue = LocalPlayer.Values.Ankles
-	local SprintValue = LocalPlayer.Values.Sprinting
-	local IsShootingValue = LocalPlayer.Values.Shooting
+	local StaminaValue = LocalPlayer.Values:WaitForChild("Stamina", 10)
+	local AnklesValue = LocalPlayer.Values:WaitForChild("Ankles", 10)
+	local SprintValue = LocalPlayer.Values:WaitForChild("Sprinting", 10)
+	local IsShootingValue = LocalPlayer.Values:WaitForChild("Shooting", 10)
 
 	local ShootRemote = ReplicatedStorage.Events.Shoot
 	local ShootFunction; 

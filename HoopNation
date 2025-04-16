@@ -1927,6 +1927,38 @@ elseif string.find(result, "Xeno") or string.find(result, "Solara") then
 			Options.GlideAmount.Value = Value
 		end
 	})
+
+    Player:AddToggle('Spinbot', {
+		Text = "Spinbot",
+		Default = false,
+		Tooltip = "Enables Spinbot",
+
+		Callback = function(Value)
+			Toggles.Spinbot.Value = Value
+
+		--[[
+			Connections_Table.SpinbotConnection = RunService.RenderStepped:Connect(function()
+			    if Toggles.Spinbot.Value and Character.HumanoidRootPart then
+			        Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(45), 0) -- Rotate by 10 degrees on the Y-axis
+			    end
+			end)		
+		]]
+			if Value then
+				if not Connections.SpinbotConnection then
+					Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
+						if Character:FindFirstChild("HumanoidRootPart") then
+							Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(20), 0)
+						end
+					end)
+				end
+			else
+				if Connections.SpinbotConnection then
+					Connections.SpinbotConnection:Disconnect()
+					Connections.SpinbotConnection = nil
+				end
+			end
+		end,
+	})
 	
 	Animations:AddLabel('Anims show to other players')
 

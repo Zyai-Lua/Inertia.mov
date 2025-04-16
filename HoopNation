@@ -2589,7 +2589,7 @@ else
 				local oldSpin = root:FindFirstChild("Spinning")
 				if oldSpin then oldSpin:Destroy() end
 		
-				local spinSpeed = 17.5 -- default spin speed
+				local spinSpeed = 20 -- default spin speed
 				local Spin = Instance.new("BodyAngularVelocity")
 				Spin.Name = "Spinning"
 				Spin.Parent = root

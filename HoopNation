@@ -2513,34 +2513,6 @@ else
         })
 
 		local SpinbotToggleValue;
-
-		local SpinBotToggle = Tab:CreateToggle({
-			Name = "Spin Bot",
-			Info = {
-				Title = 'Slider template',
-				Image = '12735851647',
-				Description = 'Just a slider for stuff',
-			},
-			CurrentValue = false,
-			Flag = "SpinBotFlag",
-			Callback = function(Value)
-				SpinbotToggleValue = Value
-				if SpinbotToggleValue then
-					if not Connections.SpinbotConnection then
-						Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
-							if Character:FindFirstChild("HumanoidRootPart") then
-								Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(10), 0)
-							end
-						end)
-					end
-				else
-					if Connections.SpinbotConnection then
-						Connections.SpinbotConnection:Disconnect()
-						Connections.SpinbotConnection = nil
-					end
-				end
-			end,
-		})
         
         local DribbleGlideToggle = Tab:CreateToggle({
             Name = 'Dribble Glide',
@@ -2612,9 +2584,24 @@ else
 			if input.UserInputType == Enum.UserInputType.Gamepad1 then
 				if input.KeyCode == Enum.KeyCode.ButtonR1 then
 					SpinbotToggleValue = not SpinbotToggleValue
+					if SpinbotToggleValue then
+						if not Connections.SpinbotConnection then
+							Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
+								if Character:FindFirstChild("HumanoidRootPart") then
+									Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(10), 0)
+								end
+							end)
+						end
+					else
+						if Connections.SpinbotConnection then
+							Connections.SpinbotConnection:Disconnect()
+							Connections.SpinbotConnection = nil
+						end
+					end
 				end
 			end
 		end)
+		
     
         Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
             Character = newCharacter

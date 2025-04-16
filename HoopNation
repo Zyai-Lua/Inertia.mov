@@ -2588,7 +2588,7 @@ else
 						if not Connections.SpinbotConnection then
 							Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
 								if Character:FindFirstChild("HumanoidRootPart") then
-									Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(10), 0)
+									Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(15), 0)
 								end
 							end)
 						end

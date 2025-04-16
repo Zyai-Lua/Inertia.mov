@@ -2512,6 +2512,8 @@ else
             end,
         })
 
+		local SpinbotToggleValue;
+
 		local SpinBotToggle = Tab:CreateToggle({
 			Name = "Spin Bot",
 			Info = {
@@ -2522,11 +2524,12 @@ else
 			CurrentValue = false,
 			Flag = "SpinBotFlag",
 			Callback = function(Value)
-				if Value then
+				SpinbotToggleValue = Value
+				if SpinbotToggleValue then
 					if not Connections.SpinbotConnection then
 						Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
 							if Character:FindFirstChild("HumanoidRootPart") then
-								Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(20), 0)
+								Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(10), 0)
 							end
 						end)
 					end
@@ -2604,6 +2607,14 @@ else
                 end
             end
         end)
+
+		UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+			if input.UserInputType == Enum.UserInputType.Gamepad1 then
+				if input.KeyCode == Enum.KeyCode.ButtonR1 then
+					SpinbotToggleValue = not SpinbotToggleValue
+				end
+			end
+		end)
     
         Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
             Character = newCharacter

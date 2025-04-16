@@ -2241,6 +2241,7 @@ else
             DribblingGlide = nil,
             CharacterAddedConnection = nil,
             ControllerInput = nil,
+			SpinbotConnection = nil
         }
         
         local Functions = {
@@ -2510,6 +2511,33 @@ else
                 end
             end,
         })
+
+		local SpinBotToggle = Tab:CreateToggle({
+			Name = "Spin Bot",
+			Info = {
+				Title = 'Slider template',
+				Image = '12735851647',
+				Description = 'Just a slider for stuff',
+			},
+			CurrentValue = false,
+			Flag = "SpinBotFlag",
+			Callback = function(Value)
+				if Value then
+					if not Connections.SpinbotConnection then
+						Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
+							if Character:FindFirstChild("HumanoidRootPart") then
+								Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(20), 0)
+							end
+						end)
+					end
+				else
+					if Connections.SpinbotConnection then
+						Connections.SpinbotConnection:Disconnect()
+						Connections.SpinbotConnection = nil
+					end
+				end
+			end,
+		})
         
         local DribbleGlideToggle = Tab:CreateToggle({
             Name = 'Dribble Glide',

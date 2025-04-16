@@ -2580,27 +2580,36 @@ else
             end
         end)
 
+		local function ToggleSpinbot(Value)
+			SpinbotToggleValue = Value
+			local root = Character and Character:FindFirstChild("HumanoidRootPart")
+			if not root then return end
+		
+			if SpinbotToggleValue then
+				local oldSpin = root:FindFirstChild("Spinning")
+				if oldSpin then oldSpin:Destroy() end
+		
+				local spinSpeed = 15 -- default spin speed
+				local Spin = Instance.new("BodyAngularVelocity")
+				Spin.Name = "Spinning"
+				Spin.Parent = root
+				Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+				Spin.AngularVelocity = Vector3.new(0, spinSpeed, 0)
+			else
+				local oldSpin = root:FindFirstChild("Spinning")
+				if oldSpin then oldSpin:Destroy() end
+			end
+		end
+		
+
 		UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 			if input.UserInputType == Enum.UserInputType.Gamepad1 then
 				if input.KeyCode == Enum.KeyCode.ButtonR1 then
-					SpinbotToggleValue = not SpinbotToggleValue
-					if SpinbotToggleValue then
-						if not Connections.SpinbotConnection then
-							Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
-								if Character:FindFirstChild("HumanoidRootPart") then
-									Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(15), 0)
-								end
-							end)
-						end
-					else
-						if Connections.SpinbotConnection then
-							Connections.SpinbotConnection:Disconnect()
-							Connections.SpinbotConnection = nil
-						end
-					end
+					ToggleSpinbot(not SpinbotToggleValue)
 				end
 			end
 		end)
+		
 		
     
         Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)

@@ -2330,26 +2330,6 @@ else
     
                 return nil -- If no basketball is found, return nil
             end,
-
-			ToggleSpinbot = function()
-				local root = Character and Character:FindFirstChild("HumanoidRootPart")
-				if not root then return end
-			
-				if ArrayField.Flags.SpinBotSliderAmount then
-					local oldSpin = root:FindFirstChild("Spinning")
-					if oldSpin then oldSpin:Destroy() end
-			
-					local spinSpeed = ArrayField.Flags.SpinBotSliderAmount -- default spin speed
-					local Spin = Instance.new("BodyAngularVelocity")
-					Spin.Name = "Spinning"
-					Spin.Parent = root
-					Spin.MaxTorque = Vector3.new(0, math.huge, 0)
-					Spin.AngularVelocity = Vector3.new(0, spinSpeed, 0)
-				else
-					local oldSpin = root:FindFirstChild("Spinning")
-					if oldSpin then oldSpin:Destroy() end
-				end
-			end
         }
     
         Functions.getClosestPlayer = function(MaxDistance)
@@ -2383,6 +2363,26 @@ else
         end
     
         local ArrayField = loadstring(game:HttpGet("https://raw.githubusercontent.com/Hosvile/Refinement/main/MC%3AArrayfield%20Library"))()
+
+		Functions.ToggleSpinbot = function()
+			local root = Character and Character:FindFirstChild("HumanoidRootPart")
+			if not root then return end
+		
+			if ArrayField.Flags.SpinBotSliderAmount then
+				local oldSpin = root:FindFirstChild("Spinning")
+				if oldSpin then oldSpin:Destroy() end
+		
+				local spinSpeed = ArrayField.Flags.SpinBotSliderAmount -- default spin speed
+				local Spin = Instance.new("BodyAngularVelocity")
+				Spin.Name = "Spinning"
+				Spin.Parent = root
+				Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+				Spin.AngularVelocity = Vector3.new(0, spinSpeed, 0)
+			else
+				local oldSpin = root:FindFirstChild("Spinning")
+				if oldSpin then oldSpin:Destroy() end
+			end
+		end
     
         local Window = ArrayField:CreateWindow({
             Name = "Inertia | Mobile",

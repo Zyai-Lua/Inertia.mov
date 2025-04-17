@@ -2215,6 +2215,7 @@ else
         local ShootRemote = ReplicatedStorage:WaitForChild("Events"):WaitForChild("Shoot")
         local ShootFunction;
         local Meter2Meter = LocalPlayer.Character.Meter2.Meter
+		local SpinbotToggleValue;
 
         for i,v in next, getgc(false) do
             if (type(v) == 'function' and not isexecutorclosure(v) and debug.getinfo(v).name and debug.getinfo(v).name == "Shoot") then
@@ -2241,7 +2242,9 @@ else
             DribblingGlide = nil,
             CharacterAddedConnection = nil,
             ControllerInput = nil,
-			SpinbotConnection = nil
+			SpinbotConnection = nil,
+			ControllerSpinbotInput = nil,
+
         }
         
         local Functions = {
@@ -2327,6 +2330,26 @@ else
     
                 return nil -- If no basketball is found, return nil
             end,
+
+			ToggleSpinbot = function()
+				local root = Character and Character:FindFirstChild("HumanoidRootPart")
+				if not root then return end
+			
+				if ArrayField.Flags.SpinBotSliderAmount then
+					local oldSpin = root:FindFirstChild("Spinning")
+					if oldSpin then oldSpin:Destroy() end
+			
+					local spinSpeed = ArrayField.Flags.SpinBotSliderAmount -- default spin speed
+					local Spin = Instance.new("BodyAngularVelocity")
+					Spin.Name = "Spinning"
+					Spin.Parent = root
+					Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+					Spin.AngularVelocity = Vector3.new(0, spinSpeed, 0)
+				else
+					local oldSpin = root:FindFirstChild("Spinning")
+					if oldSpin then oldSpin:Destroy() end
+				end
+			end
         }
     
         Functions.getClosestPlayer = function(MaxDistance)
@@ -2511,8 +2534,6 @@ else
                 end
             end,
         })
-
-		local SpinbotToggleValue;
         
         local DribbleGlideToggle = Tab:CreateToggle({
             Name = 'Dribble Glide',
@@ -2563,6 +2584,34 @@ else
                 Settings.DribbleAmount = Value
             end,
         })
+
+		local SpinBotToggleButton = Tab:CreateToggle({
+            Name = 'SpinBot',
+            Info = {
+                Title = 'Slider template',
+                Image = '12735851647',
+                Description = 'Just a slider for stuff',
+            },
+            CurrentValue = false,
+            Flag = "SpinBotFlag",
+    
+            Callback = function(Value)
+				ArrayField.Flags.SpinBotFlag = Value
+            end
+        })
+
+		local SpinBotSliderElement = Tab:CreateSlider({
+            Name = "SpinBot Slider",
+            Range = {1, 50},
+            Increment = 1,
+            Suffix = "*",
+            CurrentValue = 5,
+            Flag = "SpinBotSliderAmount",
+            Callback = function(Value)
+                ArrayField.Flags.SpinBotSliderAmount = Value
+            end,
+        })
+
     
         Connections.AutoGreenConnection = ShootButton.MouseButton1Down:Connect(function()
             if Settings.AutoGreen then
@@ -2579,38 +2628,14 @@ else
                 end
             end
         end)
-
-		local function ToggleSpinbot(Value)
-			SpinbotToggleValue = Value
-			local root = Character and Character:FindFirstChild("HumanoidRootPart")
-			if not root then return end
 		
-			if SpinbotToggleValue then
-				local oldSpin = root:FindFirstChild("Spinning")
-				if oldSpin then oldSpin:Destroy() end
-		
-				local spinSpeed = 20 -- default spin speed
-				local Spin = Instance.new("BodyAngularVelocity")
-				Spin.Name = "Spinning"
-				Spin.Parent = root
-				Spin.MaxTorque = Vector3.new(0, math.huge, 0)
-				Spin.AngularVelocity = Vector3.new(0, spinSpeed, 0)
-			else
-				local oldSpin = root:FindFirstChild("Spinning")
-				if oldSpin then oldSpin:Destroy() end
-			end
-		end
-		
-
-		UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+		Connections.ControllerSpinbotInput = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 			if input.UserInputType == Enum.UserInputType.Gamepad1 then
 				if input.KeyCode == Enum.KeyCode.ButtonR1 then
-					ToggleSpinbot(not SpinbotToggleValue)
+					Functions.ToggleSpinbot(not ArrayField.Flags.SpinBotSliderAmount)
 				end
 			end
 		end)
-		
-		
     
         Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
             Character = newCharacter

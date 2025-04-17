@@ -2225,11 +2225,6 @@ else
     
         local Courts = game.Workspace:FindFirstChild("Courts")
 
-		local ToggleFlags = {
-			SpinBotFlag = nil,
-			SpinBotSliderAmount = nil,
-		}
-    
         local Settings = {
             AutoGreen = false,
             RageAutoGreen = false,
@@ -2239,6 +2234,8 @@ else
             PickupRange = false,
             Range = 1,
             DribbleAmount = 1,
+			SpinBotFlag = nil,
+			SpinBotSliderAmount = nil,
     
         }
     
@@ -2336,15 +2333,15 @@ else
                 return nil -- If no basketball is found, return nil
             end,
 
-			ToggleSpinbot = function()
+			ToggleSpinbot = function(Value)
 				local root = Character and Character:FindFirstChild("HumanoidRootPart")
 				if not root then return end
 			
-				if ToggleFlags.SpinBotFlag then
+				if Value then
 					local oldSpin = root:FindFirstChild("Spinning")
 					if oldSpin then oldSpin:Destroy() end
 			
-					local spinSpeed = ToggleFlags.SpinBotSliderAmount -- default spin speed
+					local spinSpeed = Settings.SpinBotSliderAmount -- default spin speed
 					local Spin = Instance.new("BodyAngularVelocity")
 					Spin.Name = "Spinning"
 					Spin.Parent = root
@@ -2601,7 +2598,7 @@ else
             Flag = "SpinBotFlag",
     
             Callback = function(Value)
-				ToggleFlags.SpinBotFlag = Value
+				Settings.SpinBotFlag = Value
             end
         })
 
@@ -2613,7 +2610,7 @@ else
             CurrentValue = 5,
             Flag = "SpinBotSliderAmount",
             Callback = function(Value)
-                ToggleFlags.SpinBotSliderAmount = Value
+                Settings.SpinBotSliderAmount = Value
             end,
         })
 
@@ -2637,7 +2634,8 @@ else
 		Connections.ControllerSpinbotInput = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 			if input.UserInputType == Enum.UserInputType.Gamepad1 then
 				if input.KeyCode == Enum.KeyCode.ButtonR1 then
-					ToggleFlags.SpinBotFlag = (not ToggleFlags.SpinBotFlag)
+					Settings.SpinBotFlag = not Settings.SpinBotFlag
+					Functions.ToggleSpinbot(Settings.SpinBotFlag)
 				end
 			end
 		end)

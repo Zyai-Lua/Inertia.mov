@@ -2225,8 +2225,7 @@ else
     
         local Courts = game.Workspace:FindFirstChild("Courts")
 
-		local ArrayField;
-		ArrayField.Flags = {
+		local ToggleFlags = {
 			SpinBotFlag = nil,
 			SpinBotSliderAmount = nil,
 		}
@@ -2341,11 +2340,11 @@ else
 				local root = Character and Character:FindFirstChild("HumanoidRootPart")
 				if not root then return end
 			
-				if ArrayField.Flags.SpinBotFlag then
+				if ToggleFlags.SpinBotFlag then
 					local oldSpin = root:FindFirstChild("Spinning")
 					if oldSpin then oldSpin:Destroy() end
 			
-					local spinSpeed = ArrayField.Flags.SpinBotSliderAmount -- default spin speed
+					local spinSpeed = ToggleFlags.SpinBotSliderAmount -- default spin speed
 					local Spin = Instance.new("BodyAngularVelocity")
 					Spin.Name = "Spinning"
 					Spin.Parent = root
@@ -2602,7 +2601,7 @@ else
             Flag = "SpinBotFlag",
     
             Callback = function(Value)
-				ArrayField.Flags.SpinBotFlag = Value
+				ToggleFlags.SpinBotFlag = Value
             end
         })
 
@@ -2614,7 +2613,7 @@ else
             CurrentValue = 5,
             Flag = "SpinBotSliderAmount",
             Callback = function(Value)
-                ArrayField.Flags.SpinBotSliderAmount = Value
+                ToggleFlags.SpinBotSliderAmount = Value
             end,
         })
 
@@ -2638,7 +2637,7 @@ else
 		Connections.ControllerSpinbotInput = UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
 			if input.UserInputType == Enum.UserInputType.Gamepad1 then
 				if input.KeyCode == Enum.KeyCode.ButtonR1 then
-					Functions.ToggleSpinbot(not ArrayField.Flags.SpinBotSliderAmount)
+					ToggleFlags.SpinBotFlag = (not ToggleFlags.SpinBotFlag)
 				end
 			end
 		end)

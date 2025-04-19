@@ -2402,6 +2402,7 @@ else
         local LocalPlayer = Players.LocalPlayer;
         local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local humanoid = Character:FindFirstChildOfClass("Humanoid")
+		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
         local HumanoidRootPart = Character.HumanoidRootPart
         local Camera = Workspace.CurrentCamera;
     
@@ -2455,6 +2456,13 @@ else
 			ControllerSpinbotInput = nil,
 
         }
+
+		Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+            Character = newCharacter
+            Humanoid = newCharacter:WaitForChild("Humanoid")
+			humanoid = newCharacter:WaitForChild("Humanoid")
+            HumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+        end)
         
         local Functions = {
             --[[
@@ -2868,12 +2876,6 @@ else
 				end
 			end
 		end)
-    
-        Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
-            Character = newCharacter
-            Humanoid = newCharacter:WaitForChild("Humanoid")
-            HumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
-        end)
     
         local function test()
             return true

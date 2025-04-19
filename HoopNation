@@ -21,11 +21,12 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 	local BasketballFolder = Workspace:FindFirstChild("Basketballs")
 	local Courts = Workspace:FindFirstChild("Courts")
 
-    	local ValuesFolder = LocalPlayer:WaitForChild("Values", 10)
-    	local IsShootingValue = ValuesFolder:WaitForChild("Shooting", 10)
+    local ValuesFolder = LocalPlayer:WaitForChild("Values", 10)
+    local IsShootingValue = ValuesFolder:WaitForChild("Shooting", 10)
 	local StaminaValue = ValuesFolder:WaitForChild("Stamina", 10)
 	local AnklesValue = ValuesFolder:WaitForChild("Ankles", 10)
 	local SprintValue = ValuesFolder:WaitForChild("Sprinting", 10)
+	local ankleBreakerId = "rbxassetid://89008535250310"
 
 	local ShootRemote = ReplicatedStorage.Events.Shoot
 	local ShootFunction; 
@@ -92,6 +93,8 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 	local FrameTimer = tick()
 	local FrameCounter = 0;
 	local FPS = 60;
+
+	local walkflinging;
 
 	local FalseBoolean1 = false
 	local Meter2Meter = LocalPlayer.Character.Meter2.Meter
@@ -346,12 +349,85 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 		local target = Functions.getClosestPlayer(16)
 		if target then
 			--print("1/1")
-			if target.Values.Shooting.Value == true then
+			if target.Values.Shooting.Value or target.Values.Dunking.Value then
 				--print("2/2")
 				task.wait()
 				ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Block"):FireServer()
 			end
 		end
+	end
+
+	Functions.GetOutOfBounds = function(Value)
+		local character = LocalPlayer.Character
+		if not character or not character:FindFirstChild("HumanoidRootPart") then
+			return nil
+		end
+	
+		for _, court in next, Courts:GetChildren() do
+			local OutOfBounds = Value and court:FindFirstChild("OutOfBounds") or ReplicatedStorage:FindFirstChild("OutOfBounds")
+	
+			if OutOfBounds then
+				if Value then
+					OutOfBounds.Parent = ReplicatedStorage
+				else
+					OutOfBounds.Parent = court
+				end
+			end
+		end
+	end
+	
+	Functions.GetCourtBorders = function(Value)
+		local character = LocalPlayer.Character
+		if not character or not character:FindFirstChild("HumanoidRootPart") then
+			return nil
+		end
+	
+		for _, court in next, Courts:GetChildren() do
+			local CourtBorders = Value and court:FindFirstChild("CourtBorders") or ReplicatedStorage:FindFirstChild("CourtBorders")
+	
+			if CourtBorders then
+				if Value then
+					CourtBorders.Parent = ReplicatedStorage
+				else
+					CourtBorders.Parent = court
+				end
+			end
+		end
+	end
+
+	Functions.walkflingFunction = function()
+		if humanoid then
+			humanoid.Died:Connect(function()
+				walkflinging = false
+			end)
+		end
+	
+		walkflinging = true
+		repeat RunService.Heartbeat:Wait()
+			local character = Character
+			local root = HumanoidRootPart
+			local vel, movel = nil, 0.1
+	
+			while not (character and character.Parent and root and root.Parent) do
+				RunService.Heartbeat:Wait()
+				character = Character
+				root = HumanoidRootPart
+			end
+	
+			vel = root.Velocity
+			root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
+	
+			RunService.RenderStepped:Wait()
+			if character and character.Parent and root and root.Parent then
+				root.Velocity = vel
+			end
+	
+			RunService.Stepped:Wait()
+			if character and character.Parent and root and root.Parent then
+				root.Velocity = vel + Vector3.new(0, movel, 0)
+				movel = movel * -1
+			end
+		until walkflinging == false
 	end
 
 	local Connections = {
@@ -393,6 +469,7 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 
 	local Tabs = {
 		Main = Window:AddTab('Main'),
+		Miscellaneous = Window:AddTab('Miscellaneous'),
 		['UI Settings'] = Window:AddTab('UI Settings'),
 	}
 
@@ -400,8 +477,27 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 	local Unlocks = Tabs.Main:AddLeftGroupbox('Unlocks')
 	local Player = Tabs.Main:AddRightGroupbox('Player')
 	local Animations = Tabs.Main:AddRightGroupbox('Animations')
-	
-	
+	local Miscellaneous = Tabs.Miscellaneous:AddLeftGroupbox('Miscellaneous')
+
+	Miscellaneous:AddToggle('OutOfBoundsToggle', {
+		Text = 'Remove OutOfBounds',
+		Default = false,
+		Tooltip = 'Removes all OutOfBounds',
+
+		Callback = function(Value)
+			Functions.GetOutOfBounds(Value)
+		end
+	})
+
+	Miscellaneous:AddToggle('CourtBordersToggle', {
+		Text = 'Remove CourtBorders',
+		Default = false,
+		Tooltip = 'Removes all CourtBorders',
+
+		Callback = function(Value)
+			Functions.GetCourtBorders(Value)
+		end
+	})
 
 	Unlocks:AddDropdown('ShirtDropdown', {
 		Values = shirtNames,
@@ -649,6 +745,30 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 		end
 	})
 
+	Player:AddToggle('AntiAnklesToggle', {
+		Text = 'Anti-Ankles',
+		Default = false,
+		Tooltip = 'Stops AnkleBreakers',
+
+		Callback = function(Value)
+
+		end
+	})
+
+	Player:AddToggle('WalkFlingToggle', {
+		Text = 'Walk Fling',
+		Default = false,
+		Tooltip = 'Allows you to fling when walking',
+
+		Callback = function(Value)
+			if Value then
+				Functions.walkflingFunction()
+			else
+				walkflinging = false
+			end
+		end
+	})
+
 	Player:AddToggle('WalkSpeedToggle', {
 		Text = 'Walk Speed',
 		Default = false,
@@ -769,6 +889,26 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 		end
 	})
 
+    Player:AddToggle('AlwaysSprintToggle', {
+		Text = 'Always Sprint',
+		Default = false,
+		Tooltip = 'Allows you to sprint without holding down',
+
+		Callback = function(Value)
+			--Toggles.AlwaysSprintToggle.Value = Value
+
+			if Value then
+                if not SprintValue.Value then
+                    SprintValue.Value = true
+                end
+			else
+                if SprintValue.Value then
+                    SprintValue.Value = false
+                end
+			end
+		end
+	})
+
 	Player:AddToggle('InfiniteStaminaToggle', {
 		Text = 'Infinite Stamina',
 		Default = false,
@@ -840,49 +980,89 @@ if string.find(result, "AWP") or string.find(result, "Swift") or string.find(res
 		end
 	})
 
-	Player:AddToggle('PickupRangeToggle', {
-		Text = 'Pickup Range',
-		Default = false,
-		Tooltip = 'Modify the distance in which you can pickup the ball',
-
-		Callback = function(Value)
-			Toggles.PickupRangeToggle.Value = Value
-
-			if Value then
-				if not Connections.PickupRange then
-					Connections.PickupRange = RunService.RenderStepped:Connect(function()
-						local target = Functions.FindClosestBasketball(Options.PickupRangeAmount.Value)
-						if target and not LocalPlayer.Values.Shooting.Value then
-							firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), true)
-							firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), false)
-                        elseif string.find(result, "MacSploit") or string.find(result, "Swift") then
-                            firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart"), 0)
-                            firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart"), 1)
-						else
-							return
-						end
-					end)
-				end
-			else
-				if Connections.PickupRange then
-					Connections.PickupRange:Disconnect()
-					Connections.PickupRange = nil
-				end
-			end
-		end
-	}):AddKeyPicker('PickupRangeKeyPicker', {
-		Default = 'M', 
-		SyncToggleState = false,
-
-		Mode = 'Toggle', 
-
-		Text = 'Pickup Range', 
-		NoUI = false,
-
-		Callback = function(Value)
-			Toggles.PickupRangeToggle:SetValue(Value)
-		end,
-	})
+    if string.find(result, "MacSploit") or string.find(result, "Swift") then
+        Player:AddToggle('PickupRangeToggle', {
+            Text = 'Pickup Range',
+            Default = false,
+            Tooltip = 'Modify the distance in which you can pickup the ball',
+    
+            Callback = function(Value)
+                Toggles.PickupRangeToggle.Value = Value
+    
+                if Value then
+                    if not Connections.PickupRange then
+                        Connections.PickupRange = RunService.RenderStepped:Connect(function()
+                            local target = Functions.FindClosestBasketball(Options.PickupRangeAmount.Value)
+                            if target and not LocalPlayer.Values.Shooting.Value then
+                                firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), 0)
+                                firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), 1) 
+                            else
+                                return
+                            end
+                        end)
+                    end
+                else
+                    if Connections.PickupRange then
+                        Connections.PickupRange:Disconnect()
+                        Connections.PickupRange = nil
+                    end
+                end
+            end
+        }):AddKeyPicker('PickupRangeKeyPicker', {
+            Default = 'M', 
+            SyncToggleState = false,
+    
+            Mode = 'Toggle', 
+    
+            Text = 'Pickup Range', 
+            NoUI = false,
+    
+            Callback = function(Value)
+                Toggles.PickupRangeToggle:SetValue(Value)
+            end,
+        })
+    else
+        Player:AddToggle('PickupRangeToggle', {
+            Text = 'Pickup Range',
+            Default = false,
+            Tooltip = 'Modify the distance in which you can pickup the ball',
+    
+            Callback = function(Value)
+                Toggles.PickupRangeToggle.Value = Value
+    
+                if Value then
+                    if not Connections.PickupRange then
+                        Connections.PickupRange = RunService.RenderStepped:Connect(function()
+                            local target = Functions.FindClosestBasketball(Options.PickupRangeAmount.Value)
+                            if target and not LocalPlayer.Values.Shooting.Value then
+                                firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), true)
+                                firetouchinterest(target, Character:FindFirstChild("HumanoidRootPart") or Character:WaitForChild("HumanoidRootPart", 15), false) 
+                            else
+                                return
+                            end
+                        end)
+                    end
+                else
+                    if Connections.PickupRange then
+                        Connections.PickupRange:Disconnect()
+                        Connections.PickupRange = nil
+                    end
+                end
+            end
+        }):AddKeyPicker('PickupRangeKeyPicker', {
+            Default = 'M', 
+            SyncToggleState = false,
+    
+            Mode = 'Toggle', 
+    
+            Text = 'Pickup Range', 
+            NoUI = false,
+    
+            Callback = function(Value)
+                Toggles.PickupRangeToggle:SetValue(Value)
+            end,
+        })
+    end
 
 	Player:AddSlider('PickupRangeAmount', {
 		Text = 'Amount',
@@ -1187,6 +1367,27 @@ local old; old = hookfunction(ShootFunction, newcclosure(function(v36)
 	return old(v36)
 end))
 ]]
+	AnklesValue:GetPropertyChangedSignal("Value"):Connect(function()
+		if AnklesValue.Value == true and Toggles.AntiAnklesToggle.Value then
+			-- Stop BodyVelocity
+			local bv = hrp:FindFirstChildOfClass("BodyVelocity")
+			if bv then
+				repeat bv.MaxForce = Vector3.new(0, 0, 0) task.wait(0.1) until bv.MaxForce == Vector3.new(0, 0, 0)
+			end
+
+			-- Stop ankle breaker animation
+			if humanoid and humanoid:FindFirstChildOfClass("Animator") then
+				local animator = humanoid:FindFirstChildOfClass("Animator")
+				local tracks = animator:GetPlayingAnimationTracks()
+				for _, track in ipairs(tracks) do
+					if track.Animation and track.Animation.AnimationId == ankleBreakerId then
+						track:Stop()
+						print("Ankle breaker animation stopped.")
+					end
+				end
+			end
+		end
+	end)
 	
 	Library:SetWatermarkVisibility(true)
 
@@ -1558,7 +1759,7 @@ elseif string.find(result, "Xeno") or string.find(result, "Solara") then
 		local target = Functions.getClosestPlayer(16)
 		if target then
 			--print("1/1")
-			if target.Values.Shooting.Value == true then
+			if target.Values.Shooting.Value or target.Values.Dunking.Value then
 				--print("2/2")
 				task.wait()
 				ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Block"):FireServer()
@@ -2192,23 +2393,29 @@ elseif string.find(result, "Xeno") or string.find(result, "Solara") then
 	Library:Notify(("Status: 🟢 - Undetected (Safe to use)"), 6)
 else
 	if IsOnMobile then
-        local ReplicatedStorage = game:GetService('ReplicatedStorage')
-        local UserInputService = game:GetService("UserInputService")
-        local Players = game:GetService("Players")
-        local RunService = game:GetService("RunService")
-        --local VirtualInputManager = game:GetService("VirtualInputManager")
+        local Players = game:GetService('Players');
+        local Workspace = game:GetService('Workspace');
+        local RunService = game:GetService('RunService');
+        local ReplicatedStorage = game:GetService('ReplicatedStorage');
+        local UserInputService = game:GetService('UserInputService');
     
-        local LocalPlayer = Players.LocalPlayer
-        local Character = LocalPlayer.Character
-        local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+        local LocalPlayer = Players.LocalPlayer;
+        local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local humanoid = Character:FindFirstChildOfClass("Humanoid")
         local HumanoidRootPart = Character.HumanoidRootPart
-        
-        local GamepassValues = LocalPlayer.Character.Stats.Gamepasses or nil
+        local Camera = Workspace.CurrentCamera;
     
-        local StaminaValue = LocalPlayer.Values.Stamina
-        local AnklesValue = LocalPlayer.Values.Ankles
-        local SprintValue = LocalPlayer.Values.Sprinting
-        local IsShootingValue = LocalPlayer.Values.Shooting
+        local BasketballFolder = Workspace:FindFirstChild("Basketballs")
+        local Courts = Workspace:FindFirstChild("Courts")
+    
+        local ValuesFolder = LocalPlayer:WaitForChild("Values", 10)
+        local IsShootingValue = ValuesFolder:WaitForChild("Shooting", 10)
+        local StaminaValue = ValuesFolder:WaitForChild("Stamina", 10)
+        local AnklesValue = ValuesFolder:WaitForChild("Ankles", 10)
+        local SprintValue = ValuesFolder:WaitForChild("Sprinting", 10)
+    
+        local ShirtsFolder = ReplicatedStorage.Assets.Clothing.Shirts
+        local PantsFolder = ReplicatedStorage.Assets.Clothing.Pants
     
         local ShootButton = Players.LocalPlayer.PlayerGui.Mobile.Offense.Shoot
     
@@ -2447,6 +2654,28 @@ else
             Flag = "AutoGreenFlag",
             Callback = function(Value)
                 Settings.AutoGreen = Value
+            end,
+        })
+
+        local AlwaysSprintToggle = Tab:CreateToggle({
+            Name = "Always Sprint",
+            Info = {
+                Title = 'Slider template',
+                Image = '12735851647',
+                Description = 'Just a slider for stuff',
+            },
+            CurrentValue = false,
+            Flag = "AlwaysSprintFlag",
+            Callback = function(Value)
+                if Value then
+                    if not SprintValue.Value then
+                        SprintValue.Value = true
+                    end
+                else
+                    if SprintValue.Value then
+                        SprintValue.Value = false
+                    end
+                end
             end,
         })
     

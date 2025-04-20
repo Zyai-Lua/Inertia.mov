@@ -70,6 +70,8 @@ local FrameTimer = tick()
 local FrameCounter = 0;
 local FPS = 60;
 
+local walkflinging;
+
 local FalseBoolean1 = false
 local Meter2Meter = LocalPlayer.Character.Meter2.Meter
 local NumberValue = Instance.new("NumberValue")
@@ -306,32 +308,106 @@ Functions.teleportToDefensivePosition = function(MaxDistance)
 end
 
 Functions.AutoBlock = function()		
-  local target = Functions.getClosestPlayer(16)
-  if target then
-    --print("1/1")
-    if target.Values.Shooting.Value or target.Values.Dunking.Value then
-      --print("2/2")
-      task.wait()
-      ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Block"):FireServer()
-    end
+	local target = Functions.getClosestPlayer(16)
+	if target then
+	  --print("1/1")
+	  if target.Values.Shooting.Value or target.Values.Dunking.Value then
+		--print("2/2")
+		task.wait()
+		ReplicatedStorage:FindFirstChild("Events"):FindFirstChild("Block"):FireServer()
+	  end
+	end
   end
-end
-
-local Connections = {
-  WatermarkConnection = nil,
-  AutoGreenInput = nil,
-  MobileAutoGreenInput = nil,
-  InfiniteStamina = nil,
-  DribblingGlide = nil,
-  PickupRange = nil,
-  WalkSpeed = nil,
-  JumpPower = nil,
-  HipHeight = nil,
-  AutoBlock = nil,
-  AutoGuard = nil,
-  UpdateSnapline = nil,
-  SpinbotConnection = nil,
-}
+  
+  Functions.GetOutOfBounds = function(Value)
+	local character = LocalPlayer.Character
+	if not character or not character:FindFirstChild("HumanoidRootPart") then
+	  return nil
+	end
+  
+	for _, court in next, Courts:GetChildren() do
+	  local OutOfBounds = Value and court:FindFirstChild("OutOfBounds") or ReplicatedStorage:FindFirstChild("OutOfBounds")
+  
+	  if OutOfBounds then
+		if Value then
+		  OutOfBounds.Parent = ReplicatedStorage
+		else
+		  OutOfBounds.Parent = court
+		end
+	  end
+	end
+  end
+  
+  Functions.GetCourtBorders = function(Value)
+	local character = LocalPlayer.Character
+	if not character or not character:FindFirstChild("HumanoidRootPart") then
+	  return nil
+	end
+  
+	for _, court in next, Courts:GetChildren() do
+	  local CourtBorders = Value and court:FindFirstChild("CourtBorders") or ReplicatedStorage:FindFirstChild("CourtBorders")
+  
+	  if CourtBorders then
+		if Value then
+		  CourtBorders.Parent = ReplicatedStorage
+		else
+		  CourtBorders.Parent = court
+		end
+	  end
+	end
+  end
+  
+  Functions.walkflingFunction = function()
+	if humanoid then
+	  humanoid.Died:Connect(function()
+		walkflinging = false
+	  end)
+	end
+  
+	walkflinging = true
+	repeat RunService.Heartbeat:Wait()
+	  local character = Character
+	  local root = HumanoidRootPart
+	  local vel, movel = nil, 0.1
+  
+	  while not (character and character.Parent and root and root.Parent) do
+		RunService.Heartbeat:Wait()
+		character = Character
+		root = HumanoidRootPart
+	  end
+  
+	  vel = root.Velocity
+	  root.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
+  
+	  RunService.RenderStepped:Wait()
+	  if character and character.Parent and root and root.Parent then
+		root.Velocity = vel
+	  end
+  
+	  RunService.Stepped:Wait()
+	  if character and character.Parent and root and root.Parent then
+		root.Velocity = vel + Vector3.new(0, movel, 0)
+		movel = movel * -1
+	  end
+	until walkflinging == false
+  end
+  
+  local Connections = {
+	WatermarkConnection = nil,
+	AutoGreenInput = nil,
+	MobileAutoGreenInput = nil,
+	InfiniteStamina = nil,
+	DribblingGlide = nil,
+	PickupRange = nil,
+	WalkSpeed = nil,
+	JumpPower = nil,
+	HipHeight = nil,
+	AutoBlock = nil,
+	AutoGuard = nil,
+	UpdateSnapline = nil,
+	SpinbotConnection = nil,
+	CharacterAddedConnection = nil,
+  }
 
 Connections.CharacterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(newCharacter)
   Character = newCharacter
@@ -354,14 +430,36 @@ local Window = Library:CreateWindow({
 })
 
 local Tabs = {
-  Main = Window:AddTab('Main'),
-  ['UI Settings'] = Window:AddTab('UI Settings'),
-}
-
+	Main = Window:AddTab('Main'),
+	Miscellaneous = Window:AddTab('Miscellaneous'),
+	['UI Settings'] = Window:AddTab('UI Settings'),
+  }
+  
 local Main = Tabs.Main:AddLeftGroupbox('Main')
 local Unlocks = Tabs.Main:AddLeftGroupbox('Unlocks')
 local Player = Tabs.Main:AddRightGroupbox('Player')
 local Animations = Tabs.Main:AddRightGroupbox('Animations')
+local Miscellaneous = Tabs.Miscellaneous:AddLeftGroupbox('Miscellaneous')
+
+Miscellaneous:AddToggle('OutOfBoundsToggle', {
+Text = 'Remove OutOfBounds',
+Default = false,
+Tooltip = 'Removes all OutOfBounds',
+
+Callback = function(Value)
+	Functions.GetOutOfBounds(Value)
+end
+})
+
+Miscellaneous:AddToggle('CourtBordersToggle', {
+Text = 'Remove CourtBorders',
+Default = false,
+Tooltip = 'Removes all CourtBorders',
+
+Callback = function(Value)
+	Functions.GetCourtBorders(Value)
+end
+})
 
 Unlocks:AddDropdown('ShirtDropdown', {
   Values = shirtNames,
@@ -567,7 +665,29 @@ Main:AddToggle('AutoBlockToggle', {
   end
 })
 
+Player:AddToggle('AntiAnklesToggle', {
+	Text = 'Anti-Ankles',
+	Default = false,
+	Tooltip = 'Stops AnkleBreakers',
+  
+	Callback = function(Value)
+  
+	end
+  })
 
+  Player:AddToggle('WalkFlingToggle', {
+	Text = 'Walk Fling',
+	Default = false,
+	Tooltip = 'Allows you to fling when walking',
+  
+	Callback = function(Value)
+	  if Value then
+		Functions.walkflingFunction()
+	  else
+		walkflinging = false
+	  end
+	end
+  })
 
 Player:AddToggle('WalkSpeedToggle', {
   Text = 'Walk Speed',
@@ -605,6 +725,96 @@ Player:AddSlider('WalkSpeedSlider', {
   Callback = function(Value)
     Options.WalkSpeedSlider.Value = Value
   end
+})
+
+Player:AddToggle('JumpPowerToggle', {
+Text = 'Jump Power',
+Default = false,
+Tooltip = 'Enables Jump Power',
+
+Callback = function(Value)
+	Toggles.JumpPowerToggle.Value = Value
+
+	if Value then
+	Character:FindFirstChildOfClass("Humanoid").JumpPower = Options.JumpPowerSlider.Value
+	else
+	Character:FindFirstChildOfClass("Humanoid").JumpPower = 0
+	end
+end
+})
+
+Player:AddSlider('JumpPowerSlider', {
+Text = 'Amount',
+Default = 0,
+Min = 0,
+Max = 50,
+Rounding = 2,
+Compact = false,
+
+Callback = function(Value)
+	Options.JumpPowerSlider.Value = Value
+
+	if Toggles.JumpPowerToggle.Value then
+	Character:FindFirstChildOfClass("Humanoid").JumpPower = Options.JumpPowerSlider.Value
+	else
+	Character:FindFirstChildOfClass("Humanoid").JumpPower = 0
+	end
+end
+})
+
+Player:AddToggle('HipHeightToggle', {
+Text = 'Hip Height',
+Default = false,
+Tooltip = 'Enables Hip Height',
+
+Callback = function(Value)
+	Toggles.HipHeightToggle.Value = Value
+
+	if Value then
+	Character:FindFirstChildOfClass("Humanoid").HipHeight = Options.HipHeightSlider.Value
+	else
+	Character:FindFirstChildOfClass("Humanoid").HipHeight = 2.4090378284454346
+	end
+end
+})
+
+Player:AddSlider('HipHeightSlider', {
+Text = 'Amount',
+Default = 2,
+Min = 2,
+Max = 20,
+Rounding = 2,
+Compact = false,
+
+Callback = function(Value)
+	Options.HipHeightSlider.Value = Value
+
+	if Toggles.HipHeightToggle.Value then
+		Character:FindFirstChildOfClass("Humanoid").HipHeight = Options.HipHeightSlider.Value
+	else
+		Character:FindFirstChildOfClass("Humanoid").HipHeight = 2.4090378284454346
+	end
+end
+})
+
+Player:AddToggle('AlwaysSprintToggle', {
+Text = 'Always Sprint',
+Default = false,
+Tooltip = 'Allows you to sprint without holding down',
+
+Callback = function(Value)
+	--Toggles.AlwaysSprintToggle.Value = Value
+
+	if Value then
+		if not SprintValue.Value then
+			SprintValue.Value = true
+		end
+	else
+		if SprintValue.Value then
+			SprintValue.Value = false
+		end
+	end
+end
 })
 
 
@@ -880,6 +1090,29 @@ Animations:AddLabel('Anims show to other players')
           BackflipTrack:Play()
       end
   end)
+
+  AnklesValue:GetPropertyChangedSignal("Value"):Connect(function()
+	if AnklesValue.Value == true and Toggles.AntiAnklesToggle.Value then
+	  -- Stop BodyVelocity
+	  local bv = hrp:FindFirstChildOfClass("BodyVelocity")
+	  if bv then
+		repeat bv.MaxForce = Vector3.new(0, 0, 0) task.wait(0.1) until bv.MaxForce == Vector3.new(0, 0, 0)
+	  end
+  
+	  -- Stop ankle breaker animation
+	  if humanoid and humanoid:FindFirstChildOfClass("Animator") then
+		local animator = humanoid:FindFirstChildOfClass("Animator")
+		local tracks = animator:GetPlayingAnimationTracks()
+		for _, track in ipairs(tracks) do
+		  if track.Animation and track.Animation.AnimationId == ankleBreakerId then
+			track:Stop()
+			print("Ankle breaker animation stopped.")
+		  end
+		end
+	  end
+	end
+  end)
+  
 
 Library:SetWatermarkVisibility(true)
 

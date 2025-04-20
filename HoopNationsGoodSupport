@@ -1,3 +1,7 @@
+repeat task.wait() until game:IsLoaded()
+
+local Executor = identifyexecutor()
+
 local Players = game:GetService('Players');
 local Workspace = game:GetService('Workspace');
 local RunService = game:GetService('RunService');
@@ -972,7 +976,7 @@ Player:AddSlider('GlideAmount', {
   end
 })
 
-  if string.find(result, "MacSploit") or string.find(result, "Swift") then
+  if string.find(Executor, "MacSploit") or string.find(Executor, "Swift") then
       Player:AddToggle('PickupRangeToggle', {
           Text = 'Pickup Range',
           Default = false,

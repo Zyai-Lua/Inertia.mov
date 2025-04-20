@@ -161,6 +161,26 @@ local Functions = {
 
     return nil -- If no basketball is found, return nil
   end,
+
+  ToggleSpinbot = function(Value)
+    local root = Character and Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    if Value then
+        local oldSpin = root:FindFirstChild("Spinning")
+        if oldSpin then oldSpin:Destroy() end
+
+        local spinSpeed = Options.SpinbotSliderAmount.Value -- default spin speed
+        local Spin = Instance.new("BodyAngularVelocity")
+        Spin.Name = "Spinning"
+        Spin.Parent = root
+        Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+        Spin.AngularVelocity = Vector3.new(0, spinSpeed, 0)
+      else
+          local oldSpin = root:FindFirstChild("Spinning")
+          if oldSpin then oldSpin:Destroy() end
+      end
+  end,
 }
 
 Functions.getClosestPlayer = function(MaxDistance)
@@ -895,31 +915,22 @@ Player:AddSlider('GlideAmount', {
   Tooltip = "Enables Spinbot",
 
   Callback = function(Value)
-    Toggles.Spinbot.Value = Value
-
-  --[[
-    Connections_Table.SpinbotConnection = RunService.RenderStepped:Connect(function()
-        if Toggles.Spinbot.Value and Character.HumanoidRootPart then
-            Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(45), 0) -- Rotate by 10 degrees on the Y-axis
-        end
-    end)		
-  ]]
-    if Value then
-      if not Connections.SpinbotConnection then
-        Connections.SpinbotConnection = RunService.RenderStepped:Connect(function()
-          if Character:FindFirstChild("HumanoidRootPart") then
-            Character.HumanoidRootPart.CFrame = Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(20), 0)
-          end
-        end)
-      end
-    else
-      if Connections.SpinbotConnection then
-        Connections.SpinbotConnection:Disconnect()
-        Connections.SpinbotConnection = nil
-      end
-    end
+	Functions.ToggleSpinbot(Value)
   end,
 })
+
+Player:AddSlider('SpinbotSliderAmount', {
+	Text = 'Amount',
+	Default = 1,
+	Min = 1,
+	Max = 20,
+	Rounding = 2,
+	Compact = false,
+  
+	Callback = function(Value)
+	  Options.SpinbotSliderAmount.Value = Value
+	end
+  })
 
 Animations:AddLabel('Anims show to other players')
 

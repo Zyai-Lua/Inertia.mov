@@ -455,6 +455,7 @@ local SpinBotSliderElement = Tab:CreateSlider({
     Flag = "SpinBotSliderAmount",
     Callback = function(Value)
         Settings.SpinBotSliderAmount = Value
+        Functions.ToggleSpinbot(Settings.SpinBotFlag)
     end,
 })
 

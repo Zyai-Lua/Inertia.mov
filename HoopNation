@@ -1,11 +1,17 @@
 repeat task.wait() until game:IsLoaded()
 
 local Executor = identifyexecutor()
-
 local UserInputService = game:GetService("UserInputService")
 local IsOnMobile = table.find({Enum.Platform.IOS, Enum.Platform.Android}, UserInputService:GetPlatform())
 
-if string.find(Executor, "AWP") or string.find(Executor, "Swift") or string.find(Executor, "MacSploit") or string.find(Executor, "Wave") or string.find(Executor, "Potassium") or string.find(Executor, "Ronix") and not IsOnMobile then
+if (
+	string.find(Executor, "AWP")
+	or string.find(Executor, "Swift")
+	or string.find(Executor, "MacSploit")
+	or string.find(Executor, "Wave")
+	or string.find(Executor, "Potassium")
+	or string.find(Executor, "Ronix")
+) and not IsOnMobile then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNationsGoodSupport"))()
 elseif string.find(Executor, "Xeno") or string.find(Executor, "Solara") then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNationsBadSupport"))()

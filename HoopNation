@@ -9,8 +9,6 @@ if string.find(Executor, "AWP") or string.find(Executor, "Swift") or string.find
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNationsGoodSupport"))()
 elseif string.find(Executor, "Xeno") or string.find(Executor, "Solara") then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNationsBadSupport"))()
-elseif not IsOnMobile then
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNationsBadSupport"))()
 else
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNationsMobileSupport"))()
 end

@@ -1101,7 +1101,16 @@ Player:AddToggle('Spinbot', {
   Callback = function(Value)
 	Functions.ToggleSpinbot(Value)
   end,
-})
+}):AddKeyPicker('SpinbotToggleKeypicker', {
+      Default = 'R',
+      SyncToggleState = false,
+      Mode = 'Toggle',
+      Text = 'Spinbot',
+      NoUI = false,
+      Callback = function(Value)
+          Functions.ToggleSpinbot(Value)
+      end,
+  })
 
 Player:AddSlider('SpinbotSliderAmount', {
 	Text = 'Amount',

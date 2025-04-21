@@ -901,7 +901,7 @@ Player:AddSlider('GlideAmount', {
   Default = 1,
   Min = 1,
   Max = 5,
-  Rounding = 1,
+  Rounding = 2,
   Compact = false,
 
   Callback = function(Value)
@@ -917,7 +917,17 @@ Player:AddSlider('GlideAmount', {
   Callback = function(Value)
 	Functions.ToggleSpinbot(Value)
   end,
-})
+})}):AddKeyPicker('SpinbotToggleKeypicker', {
+      Default = 'R',
+      SyncToggleState = false,
+      Mode = 'Toggle',
+      Text = 'Spinbot',
+      NoUI = false,
+      Callback = function(Value)
+          Functions.ToggleSpinbot(Value)
+      end,
+  })
+
 
 Player:AddSlider('SpinbotSliderAmount', {
 	Text = 'Amount',

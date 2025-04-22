@@ -917,7 +917,7 @@ Player:AddSlider('GlideAmount', {
   Callback = function(Value)
 	Functions.ToggleSpinbot(Value)
   end,
-})}):AddKeyPicker('SpinbotToggleKeypicker', {
+}):AddKeyPicker('SpinbotToggleKeypicker', {
       Default = 'R',
       SyncToggleState = false,
       Mode = 'Toggle',

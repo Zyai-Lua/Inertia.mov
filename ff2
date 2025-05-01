@@ -40,8 +40,11 @@ local Main = Tabs.Main:AddLeftGroupbox('Main')
 Main:AddToggle('Magnets', {Text = 'Ball Magnets',Default = false,})
 Main:AddSlider('MagnetsDistance', {Text = 'Distance',Default = 10,Min = 0,Max = 100,Rounding = 1,Compact = false})
 
-Main:AddToggle('Anti-Block', {Text = 'Anti Block',Default = false,})
-Main:AddToggle('Anti-Jam', {Text = 'Anti Jam',Default = false,})
+Main:AddToggle('SizeExtender', {Text = 'Football Extender',Default = false,})
+Main:AddSlider('FootballX', {Text = 'Distance',Default = 1,Min = 0,Max = 25,Rounding = 1,Compact = false})
+Main:AddSlider('FootballY', {Text = 'Distance',Default = 1,Min = 0,Max = 25,Rounding = 1,Compact = false})
+Main:AddSlider('FootballZ', {Text = 'Distance',Default = 1,Min = 0,Max = 25,Rounding = 1,Compact = false})
+
 Main:AddToggle('KickerAimbot', {Text = 'Kicker Aimbot',Default = false,})
 Main:AddToggle('FootballTracers', {Text = 'Football Tracers',Default = false,}):AddColorPicker('FootballTracersColor', {Default = Color3.fromRGB(0, 125, 255),Title = 'Color',Transparency = 0,})
 
@@ -79,6 +82,17 @@ local function beamProjectile(g, v0, x0, t1) -- pasted from chat GPT
 end
 
 RunService.Heartbeat:Connect(function()
+    if Toggles.SizeExtender.Value then
+        for _, v in ipairs(workspace:GetChildren()) do
+            if v.Name == "Football" and v:IsA("BasePart") then
+                for _, vp in ipairs(getconnections(v:GetPropertyChangedSignal("Size"))) do
+                    vp:Disable()
+                end
+                v.CanCollide = false
+                v.Size = Vector3.new(Options.FootballX.Value, Options.FootballY.Value, Options.FootballZ.Value)
+            end
+        end
+    end
 
     for _, Value in pairs(workspace:GetChildren()) do
         if Value.Name == "Football" and Value:IsA("BasePart") then
@@ -93,32 +107,10 @@ RunService.Heartbeat:Connect(function()
         end
     end
     
-    if Toggles["Anti-Jam"].Value then
-        for index, player in pairs(game:GetService("Players"):GetChildren()) do
-            if player ~= Players.LocalPlayer then
-                local char = player.Character
-                if char then
-                    for index, part in pairs(char:GetChildren()) do
-                        if part:IsA("BasePart") or part:IsA("MeshPart") and part.CanCollide then
-                            if Inertia.AntiJam then
-                                part.CanCollide = false
-                            else
-                                part.CanCollide = true
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
+    
 end)
 
-Character.DescendantAdded:Connect(function(child)
-	if string.match(child.Name, "FFmover") and Toggles["Anti-Block"].Value then
-		print("Removed.")
-		child:Destroy()
-	end
-end)
+
 
 workspace.ChildAdded:Connect(function(child)
     if child.Name == "Football" and child:IsA("BasePart") and Toggles.FootballTracers.Value then

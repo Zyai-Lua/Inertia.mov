@@ -20,7 +20,7 @@ elseif game.PlaceId == 13083893317 then
 	wait()
 	warn("Loaded! Enjoy.")
 
-elseif game.PlaceId == 16128274392 or game.PlaceId == 16110530195 or game.PlaceId == 108344270316113 or game.PlaceId == 16347334090 then
+elseif game.PlaceId == 15558033314 or game.PlaceId == 16128274392 or game.PlaceId == 16110530195 or game.PlaceId == 108344270316113 then
 	warn("Loading Hoop Nation Free")
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNation"))()
 	wait()

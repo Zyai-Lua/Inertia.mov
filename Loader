@@ -1,21 +1,4 @@
-if game.PlaceId == 14259168147 or game.PlaceId == 14386691987 then
-	warn("Loading Basketball Legends")
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/BasketballLegends"))()
-	wait()
-	warn("Loaded! Enjoy.")
-
-elseif game.PlaceId == 3297964905 then
-	warn("Loading Weaponary Free")
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Weaponary_Free"))()
-	wait()
-	warn("Loaded! Enjoy.")
-
-elseif game.PlaceId == 17625359962 then
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Rivals"))()
-	wait()
-	warn("Loaded! Enjoy.")
-
-elseif game.PlaceId == 13083893317 then
+if game.PlaceId == 13083893317 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/LifeSentence"))()
 	wait()
 	warn("Loaded! Enjoy.")
@@ -25,4 +8,6 @@ elseif game.PlaceId == 15558033314 or game.PlaceId == 16128274392 or game.PlaceI
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/HoopNation"))()
 	wait()
 	warn("Loaded! Enjoy.")
+elseif game.PlaceId == 8204899140 then
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/ff2"))()
 end

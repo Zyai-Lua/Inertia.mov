@@ -2842,10 +2842,10 @@ function Library:SetWatermarkVisibility(Bool)
 end;
 
 function Library:SetKeybindVisibility(Bool)
-	if Library.KeybindOuter then
-		Library.KeybindOuter.Visible = Bool;
+	if Library.KeybindFrame then
+		Library.KeybindFrame.Visible = Bool
 	end
-end;
+end
 
 function Library:SetWatermark(Text)
 	local X, Y = Library:GetTextBounds(Text, Library.Font, 14);

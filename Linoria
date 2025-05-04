@@ -2842,7 +2842,9 @@ function Library:SetWatermarkVisibility(Bool)
 end;
 
 function Library:SetKeybindVisibility(Bool)
-	Library.KeybindOuter.Visible = Bool;
+	if Library.KeybindOuter then
+		Library.KeybindOuter.Visible = Bool;
+	end
 end;
 
 function Library:SetWatermark(Text)

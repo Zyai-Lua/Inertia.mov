@@ -66,6 +66,10 @@ table.insert(Library.Signals, RenderStepped:Connect(function(Delta)
 	end
 end))
 
+function Library:SetKeybindVisibility(Bool)
+
+end;
+
 local function GetPlayersString()
 	local PlayerList = Players:GetPlayers();
 
@@ -2838,7 +2842,7 @@ function Library:SetWatermarkVisibility(Bool)
 end;
 
 function Library:SetKeybindVisibility(Bool)
-	Library.KeybindContainer.Visible = Bool;
+	Library.KeybindFrame.Visible = Bool;
 end;
 
 function Library:SetWatermark(Text)

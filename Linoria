@@ -2843,6 +2843,8 @@ end;
 
 function Library:SetKeybindVisibility(Bool)
 	Library.KeybindFrame.Visible = Bool;
+	Library.KeybindContainer.Visible = Bool;
+	Library.KeybindLabel.Visible = Bool;
 end;
 
 function Library:SetWatermark(Text)

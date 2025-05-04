@@ -2763,8 +2763,6 @@ do
 	Library.WatermarkText = WatermarkLabel;
 	Library:MakeDraggable(Library.Watermark);
 
-
-
 	local KeybindOuter = Library:Create('Frame', {
 		AnchorPoint = Vector2.new(0, 0.5);
 		BorderColor3 = Color3.new(0, 0, 0);
@@ -2837,6 +2835,10 @@ end;
 
 function Library:SetWatermarkVisibility(Bool)
 	Library.Watermark.Visible = Bool;
+end;
+
+function Library:SetKeybindVisibility(Bool)
+	Library.KeybindContainer.Visible = Bool;
 end;
 
 function Library:SetWatermark(Text)

@@ -1,0 +1,389 @@
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local VirtualInputManager = game:GetService('VirtualInputManager')
+local UserInputService = game:GetService('UserInputService')
+local RunService = game:GetService('RunService')
+local Workspace = game:GetService('Workspace')
+local Players = game:GetService('Players')
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
+local Humanoid = Character.Humanoid
+
+local RecoilBackup = {}
+local SpreadBackup = {}
+
+local function RemoveRecoil()
+    RecoilBackup = {}
+    
+    for _, obj in ipairs(getgc(true)) do
+        if typeof(obj) == "table" then
+            for key, value in pairs(obj) do
+                if typeof(value) == "number" and tostring(key):lower():find("recoil") then
+                    if not RecoilBackup[obj] then
+                        RecoilBackup[obj] = {}
+                    end
+                    RecoilBackup[obj][key] = value
+                    obj[key] = 0
+                end
+            end
+        end
+    end
+end
+
+local function restoreRecoil()
+    for obj, keys in pairs(RecoilBackup) do
+        for key, value in pairs(keys) do
+            if obj[key] ~= nil then
+                obj[key] = value
+            end
+        end
+    end
+    
+    RecoilBackup = {}
+end
+
+local function removeSpread()
+    SpreadBackup = {} -- Clear old backup
+    
+    for _, obj in ipairs(getgc(true)) do
+        if typeof(obj) == "table" then
+            for key, value in pairs(obj) do
+                local keyStr = tostring(key):lower()
+                if typeof(value) == "number" and (keyStr:find("spread") or key == "MinSpread" or key == "MaxSpread") then
+                    -- Backup original value
+                    if not SpreadBackup[obj] then
+                        SpreadBackup[obj] = {}
+                    end
+                    SpreadBackup[obj][key] = value
+                    
+                    -- Set spread to 0 (perfect accuracy)
+                    obj[key] = 0
+                end
+            end
+        end
+    end
+end
+
+local function restoreSpread()
+    for obj, keys in pairs(SpreadBackup) do
+        for key, value in pairs(keys) do
+            if obj[key] ~= nil then
+                obj[key] = value -- Restore original spread
+            end
+        end
+    end
+    SpreadBackup = {} -- Clear backup
+end
+
+local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
+
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Linoria'))()
+local ThemeManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/LinoriaTheme'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+local FrameCounter, FrameTimer, FPS,StartTime = 0,0,60, tick()
+
+local Window = Library:CreateWindow({
+
+	Title = '<font color=\"#007dff\">Inertia</font> - <i>Operation Seige</i>',
+	Center = true,
+	AutoShow = true,
+	TabPadding = 8,
+	MenuFadeTime = 0.2
+})
+
+local Tabs = {
+	Combat = Window:AddTab('Combat'),
+    Visuals = Window:AddTab('Visuals'),
+	['UI Settings'] = Window:AddTab('UI Settings'),
+}
+
+local PlayerVisuals = Tabs.Visuals:AddLeftGroupbox('Player ESP')
+
+PlayerVisuals:AddToggle('ESP', {Text = 'Enabled',Default = false,Tooltip = 'Enables ESP',})
+PlayerVisuals:AddToggle('Boxes', {Text = 'Boxes',Default = false,Tooltip = 'Enables Boxes',}):AddColorPicker('Boxes_Color', {Default = Color3.fromRGB(255, 255, 255),Title = 'Color',Transparency = 0,})
+PlayerVisuals:AddToggle('Names', {Text = 'Names',Default = false,Tooltip = 'Enables Names',})
+PlayerVisuals:AddToggle('HealthBar', {Text = 'Health Bar',Default = false,Tooltip = 'Enables Health Bars',}):AddColorPicker('Health_High', {Default = Color3.fromRGB(0, 255, 0),Title = 'Color',Transparency = 0,}):AddColorPicker('Health_Low', {Default = Color3.fromRGB(255, 0, 0),Title = 'Color',Transparency = 0,})
+PlayerVisuals:AddToggle('Weapon', {Text = 'Weapon',Default = false,Tooltip = 'Enables Weapons',})
+PlayerVisuals:AddToggle('Distance', {Text = 'Distance',Default = false,Tooltip = 'Enables Distances',})
+
+local SilentAim = Tabs.Combat:AddLeftGroupbox('Silent Aim')
+
+SilentAim:AddToggle('Silent', {Text = 'Enabled',Default = false,Tooltip = 'Enables Silent Aim',})
+SilentAim:AddToggle('Team_Check', {Text = 'Team Check',Default = false,Tooltip = 'Enables Team Check',})
+SilentAim:AddToggle('ShowFOV', {Text = 'Show FOV',Default = false,Tooltip = 'Enables FOV Circle On Screen',}):AddColorPicker('FOV_Color', {Default = Color3.fromRGB(255, 255, 255),Title = 'Color',Transparency = 0,})
+SilentAim:AddSlider('Hit_Chance', {Text = 'Hit Chance',Default = 100,Min = 1,Max = 100,Rounding = 1,Compact = false,})
+SilentAim:AddSlider('FOV_Size', {Text = 'Size',Default = 100,Min = 1,Max = 1000,Rounding = 1,Compact = false,})
+SilentAim:AddDropdown('Targetr', {Values = { 'Head','HumanoidRootPart'},Default = 1,Multi = false,Text = 'Target Part',})
+
+local GunMods = Tabs.Combat:AddRightGroupbox('Gun Mods')
+
+GunMods:AddToggle('NoRecoil', {Text = 'No Recoil',Default = false,Tooltip = 'No Recoil',Callback = function(value)
+    if value then
+        RemoveRecoil()
+    else
+        restoreRecoil()
+    end
+
+end})
+
+GunMods:AddToggle('NoSpread', {Text = 'No Spread',Default = false,Tooltip = 'No Recoil',Callback = function(value)
+    if value then
+        removeSpread()
+    else
+        restoreSpread()
+    end
+
+end})
+
+local function ESP(model)
+    local Connection;
+    local Drawings = {
+        box = Drawing.new("Square"),
+        boxOutline = Drawing.new("Square"),
+        name = Drawing.new("Text"),
+        health = Drawing.new("Line"),
+        healthOutline = Drawing.new("Line"),
+        weapon = Drawing.new("Text"),
+        distance = Drawing.new("Text"),
+    }
+
+    local function Remove()
+        if Connection then Connection:Disconnect() end 
+    end
+    model.Destroying:Connect(Remove) 
+
+	local update = function()
+
+       
+        
+		Connection = RunService.Heartbeat:Connect(function()
+            local Character = model and model.Character 
+            if Character then
+                local RootPart = Character and Character.HumanoidRootPart
+                local Humanoid = Character and Character:FindFirstChild("Humanoid")
+
+                local Position, Visible = Camera:WorldToViewportPoint(RootPart.CFrame.Position)
+                local weapon = Character:FindFirstChildWhichIsA("Tool") or "none"
+                if Visible and Toggles.ESP.Value and Humanoid.Health > 0 and model.Team ~= LocalPlayer.Team then
+                    local scale = 1 / (Position.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 1000
+                    local width, height = math.floor(4.5 * scale), math.floor(6 * scale)
+                    local x, y = math.floor(Position.X), math.floor(Position.Y)
+                    local xPosition, yPostion = math.floor(x - width * 0.5), math.floor((y - height * 0.5) + (0.5 * scale))
+
+                    local distance = (HumanoidRootPart.CFrame.Position - RootPart.CFrame.Position).Magnitude
+
+                    Drawings.box.Size = Vector2.new(width, height)
+                    Drawings.box.Position = Vector2.new(xPosition, yPostion)
+                    Drawings.boxOutline.Size = Drawings.box.Size
+                    Drawings.boxOutline.Position = Drawings.box.Position
+
+                    Drawings.box.Color = Options.Boxes_Color.Value
+                    Drawings.box.Thickness = 1
+                    Drawings.boxOutline.Color = Color3.fromRGB(0,0,0)
+                    Drawings.boxOutline.Thickness = 3
+
+                    Drawings.boxOutline.ZIndex = Drawings.box.ZIndex - 1
+                    Drawings.box.Visible = Toggles.Boxes.Value
+                    Drawings.boxOutline.Visible = Toggles.Boxes.Value
+
+                    Drawings.name.Text = model.Name
+                    Drawings.name.Size = math.max(math.min(math.abs(12.5 * scale), 12.5), 10)
+                    Drawings.name.Position = Vector2.new(x, (yPostion - Drawings.name.TextBounds.Y) - 2)
+                    Drawings.name.Color = Color3.fromRGB(255,255,255)
+                    Drawings.name.Outline = true
+                    Drawings.name.OutlineColor = Color3.fromRGB(0,0,0)
+                    Drawings.name.Visible = Toggles.Names.Value
+                    Drawings.name.Center = true
+
+                    Drawings.name.ZIndex = Drawings.box.ZIndex + 1
+                    
+                    local healthPercent = 100 / (Humanoid.MaxHealth / Humanoid.Health)
+		
+                    Drawings.healthOutline.From = Vector2.new(xPosition - 5, yPostion)
+                    Drawings.healthOutline.To = Vector2.new(xPosition - 5, yPostion + height)
+                    Drawings.health.From = Vector2.new(xPosition - 5, (yPostion + height) - 1)
+                    Drawings.health.To = Vector2.new(xPosition - 5, ((Drawings.health.From.Y - ((height / 100) * healthPercent))) + 2)
+
+                    Drawings.health.Color = Options.Health_Low.Value:Lerp(Options.Health_High.Value, healthPercent * 0.01)
+                    Drawings.healthOutline.Color = Color3.fromRGB(0,0,0)
+                    Drawings.healthOutline.Thickness = 3
+
+                    Drawings.healthOutline.ZIndex = Drawings.health.ZIndex - 1
+
+                    Drawings.health.Visible = Toggles.HealthBar.Value
+                    Drawings.healthOutline.Visible = Toggles.HealthBar.Value
+
+                    Drawings.weapon.Text = weapon.Name or weapon
+                    Drawings.weapon.Size = math.max(math.min(math.abs(11 * scale), 11), 10)
+                    Drawings.weapon.Position = Vector2.new(x, (yPostion + height) + (Drawings.weapon.TextBounds.Y * 0.25))
+                    Drawings.weapon.Color = Color3.fromRGB(255,255,255)
+                    Drawings.weapon.Outline = true
+                    Drawings.weapon.OutlineColor = Color3.fromRGB(0,0,0)
+
+                    Drawings.weapon.Visible = Toggles.Weapon.Value
+                    Drawings.weapon.Center = true
+
+                    Drawings.distance.Text = math.floor(distance).."(s)"
+                    Drawings.distance.Size = math.max(math.min(math.abs(11 * scale), 11), 10)
+                    Drawings.distance.Position = Vector2.new(x, (yPostion + height + 10) + (Drawings.distance.TextBounds.Y * 0.25))
+                    Drawings.distance.Color = Color3.fromRGB(255,255,255)
+                    Drawings.distance.Outline = true
+                    Drawings.distance.OutlineColor = Color3.fromRGB(0,0,0)
+
+                    Drawings.distance.Visible = Toggles.Distance.Value
+                    Drawings.distance.Center = true
+
+
+                else
+                    Drawings.box.Visible = false
+                    Drawings.boxOutline.Visible = false
+                    Drawings.name.Visible = false
+                    Drawings.health.Visible = false
+                    Drawings.healthOutline.Visible = false
+                    Drawings.weapon.Visible = false
+                    Drawings.distance.Visible = false
+                end
+            else
+                Drawings.box.Visible = false
+                Drawings.boxOutline.Visible = false
+                Drawings.name.Visible = false
+                Drawings.health.Visible = false
+                Drawings.healthOutline.Visible = false
+                Drawings.weapon.Visible = false
+                Drawings.distance.Visible = false
+            end
+            
+        end)
+	end
+	coroutine.wrap(update)()   
+end
+
+do -- Update ESP
+	for _, v in pairs(Players:GetPlayers()) do
+		if v.Name ~= Players.LocalPlayer.Name then
+			coroutine.wrap(ESP)(v)
+		end      
+	end
+	--
+	Players.PlayerAdded:Connect(function(v)
+		task.delay(1, function()
+			coroutine.wrap(ESP)(v)
+		end)
+	end) 
+end 
+
+
+local GameFramework = getsenv(game:GetService("Players").LocalPlayer.PlayerGui.SE_Framework)
+
+local function GetClosestTarget()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    local mouse = LocalPlayer:GetMouse()
+    
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Team ~= LocalPlayer.Team then
+            local pos, onScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+            if onScreen then
+                local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
+                if dist < shortestDistance and dist < Options.FOV_Size.Value then
+                    shortestDistance = dist
+                    closestPlayer = player
+                end
+            end
+        end
+    end
+    
+    return closestPlayer
+end
+
+local SilentFOV = Drawing.new("Circle")
+SilentFOV.Radius = Options.FOV_Size.Value
+SilentFOV.Visible = false
+SilentFOV.Thickness = 1.5
+SilentFOV.ZIndex = 2
+SilentFOV.Color = Options.FOV_Color.Value
+
+local SilentFOVOutline = Drawing.new("Circle")
+SilentFOVOutline.Radius =  Options.FOV_Size.Value
+SilentFOVOutline.Visible = false
+SilentFOVOutline.Thickness = 2
+SilentFOVOutline.ZIndex = 1
+SilentFOVOutline.Color = Color3.fromRGB(0,0,0)
+
+local OldBullet = GameFramework.BulletRaycast
+GameFramework.BulletRaycast = function(...)
+    local Args = {...}
+    local ClosestTarget = GetClosestTarget()
+    if ClosestTarget and ClosestTarget.Character and ClosestTarget.Character[Options.Targetr.Value] then
+        Args[2] = (ClosestTarget.Character[Options.Targetr.Value].CFrame.p - Args[1]).Unit * 1024
+    end
+    return OldBullet(unpack(Args))
+end;
+
+
+RunService.Heartbeat:Connect(function()
+    if Toggles.Silent.Value and Toggles.ShowFOV.Value then
+        SilentFOV.Visible = true
+        SilentFOVOutline.Visible = true
+
+        SilentFOV.Radius = Options.FOV_Size.Value
+        SilentFOVOutline.Radius = Options.FOV_Size.Value
+
+        SilentFOV.Position = UserInputService:GetMouseLocation()
+        SilentFOVOutline.Position = UserInputService:GetMouseLocation()
+        SilentFOV.Color = Options.FOV_Color.Value
+    else
+        SilentFOV.Visible = false
+        SilentFOVOutline.Visible = false
+    end
+end)
+
+
+
+
+do -- Final Loading
+
+	Library:SetWatermarkVisibility(true)
+	Connection = RunService.RenderStepped:Connect(function()
+		FrameCounter += 1 
+
+		if (tick() - FrameTimer) >= 1 then
+			FPS = FrameCounter 
+			FrameTimer = tick() 
+			FrameCounter = 0 
+		end 
+
+		Library:SetWatermark(('inertia | %s fps | %s ms'):format(math.floor(FPS),math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()))) 
+	end) 
+
+	Library.KeybindFrame.Visible = true 
+
+	Library:OnUnload(function()
+		Library.Unloaded = true
+	end)
+
+	local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+	MenuGroup:AddButton('Unload', function() Library:Unload() end)
+
+	MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'End', NoUI = true, Text = 'Menu keybind' })
+
+	Library.ToggleKeybind = Options.MenuKeybind
+
+	ThemeManager:SetLibrary(Library)
+	SaveManager:SetLibrary(Library)
+	SaveManager:IgnoreThemeSettings()
+	SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+	ThemeManager:SetFolder('Inertia')
+	SaveManager:SetFolder('Inertia/Project Delta')
+	SaveManager:BuildConfigSection(Tabs['UI Settings'])
+	ThemeManager:ApplyToTab(Tabs['UI Settings'])
+	SaveManager:LoadAutoloadConfig()
+
+
+
+	local TimeToLoad = math.abs(StartTime - tick())
+	Library:Notify("Inertia: Took "..TimeToLoad.."s To Load",5)
+end

@@ -10,4 +10,6 @@ elseif game.PlaceId == 15558033314 or game.PlaceId == 16128274392 or game.PlaceI
 	warn("Loaded! Enjoy.")
 elseif game.PlaceId == 8204899140 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/ff2"))()
+elseif game.PlaceId == 13997264379 then
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Operation"))()
 end

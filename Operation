@@ -12,72 +12,6 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
 local Humanoid = Character.Humanoid
 
-local RecoilBackup = {}
-local SpreadBackup = {}
-
-local function RemoveRecoil()
-    RecoilBackup = {}
-    
-    for _, obj in ipairs(getgc(true)) do
-        if typeof(obj) == "table" then
-            for key, value in pairs(obj) do
-                if typeof(value) == "number" and tostring(key):lower():find("recoil") then
-                    if not RecoilBackup[obj] then
-                        RecoilBackup[obj] = {}
-                    end
-                    RecoilBackup[obj][key] = value
-                    obj[key] = 0
-                end
-            end
-        end
-    end
-end
-
-local function restoreRecoil()
-    for obj, keys in pairs(RecoilBackup) do
-        for key, value in pairs(keys) do
-            if obj[key] ~= nil then
-                obj[key] = value
-            end
-        end
-    end
-    
-    RecoilBackup = {}
-end
-
-local function removeSpread()
-    SpreadBackup = {} -- Clear old backup
-    
-    for _, obj in ipairs(getgc(true)) do
-        if typeof(obj) == "table" then
-            for key, value in pairs(obj) do
-                local keyStr = tostring(key):lower()
-                if typeof(value) == "number" and (keyStr:find("spread") or key == "MinSpread" or key == "MaxSpread") then
-                    -- Backup original value
-                    if not SpreadBackup[obj] then
-                        SpreadBackup[obj] = {}
-                    end
-                    SpreadBackup[obj][key] = value
-                    
-                    -- Set spread to 0 (perfect accuracy)
-                    obj[key] = 0
-                end
-            end
-        end
-    end
-end
-
-local function restoreSpread()
-    for obj, keys in pairs(SpreadBackup) do
-        for key, value in pairs(keys) do
-            if obj[key] ~= nil then
-                obj[key] = value -- Restore original spread
-            end
-        end
-    end
-    SpreadBackup = {} -- Clear backup
-end
-
 local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Linoria'))()
@@ -87,7 +21,7 @@ local FrameCounter, FrameTimer, FPS,StartTime = 0,0,60, tick()
 
 local Window = Library:CreateWindow({
 
-	Title = '<font color=\"#007dff\">Inertia</font> - <i>Operation Seige</i>',
+	Title = 'ESP',
 	Center = true,
 	AutoShow = true,
 	TabPadding = 8,
@@ -108,6 +42,8 @@ PlayerVisuals:AddToggle('Names', {Text = 'Names',Default = false,Tooltip = 'Enab
 PlayerVisuals:AddToggle('HealthBar', {Text = 'Health Bar',Default = false,Tooltip = 'Enables Health Bars',}):AddColorPicker('Health_High', {Default = Color3.fromRGB(0, 255, 0),Title = 'Color',Transparency = 0,}):AddColorPicker('Health_Low', {Default = Color3.fromRGB(255, 0, 0),Title = 'Color',Transparency = 0,})
 PlayerVisuals:AddToggle('Weapon', {Text = 'Weapon',Default = false,Tooltip = 'Enables Weapons',})
 PlayerVisuals:AddToggle('Distance', {Text = 'Distance',Default = false,Tooltip = 'Enables Distances',})
+PlayerVisuals:AddToggle('Skeleton', {Text = 'Skeleton', Default = false, Tooltip = 'Draws skeleton bones'})
+PlayerVisuals:AddToggle('HeadCircle', {Text = 'Head Circle', Default = false, Tooltip = 'Draws Circle Around Head'})
 
 local SilentAim = Tabs.Combat:AddLeftGroupbox('Silent Aim')
 
@@ -120,23 +56,54 @@ SilentAim:AddDropdown('Targetr', {Values = { 'Head','HumanoidRootPart'},Default 
 
 local GunMods = Tabs.Combat:AddRightGroupbox('Gun Mods')
 
-GunMods:AddToggle('NoRecoil', {Text = 'No Recoil',Default = false,Tooltip = 'No Recoil',Callback = function(value)
-    if value then
-        RemoveRecoil()
+GunMods:AddToggle('NoRecoil', {Text = 'No Recoil',Default = false,Tooltip = '',Callback = function(val)
+    if val then
+        for _, obj in ipairs(getgc(true)) do
+            if typeof(obj) == "table" then
+                for key, value in pairs(obj) do
+                    if typeof(key) == "string" and key:lower():find("recoil") and typeof(value) == "number" then
+                        obj[key] = 0.000001
+                    end
+                end
+            end
+        end
     else
-        restoreRecoil()
+        for _, obj in ipairs(getgc(true)) do
+            if typeof(obj) == "table" then
+                for key, value in pairs(obj) do
+                    if typeof(key) == "string" and key:lower():find("recoil") and typeof(value) == "number" then
+                        obj[key] = 0.5
+                    end
+                end
+            end
+        end
     end
-
 end})
 
-GunMods:AddToggle('NoSpread', {Text = 'No Spread',Default = false,Tooltip = 'No Recoil',Callback = function(value)
-    if value then
-        removeSpread()
+GunMods:AddToggle('NoSpread', {Text = 'No Spread',Default = false,Tooltip = '',Callback = function(val)
+    if val then
+        for _, obj in ipairs(getgc(true)) do
+            if typeof(obj) == "table" then
+                for key, value in pairs(obj) do
+                    if typeof(key) == "string" and key:lower():find("spread") and typeof(value) == "number" then
+                        obj[key] = 0.000001
+                    end
+                end
+            end
+        end
     else
-        restoreSpread()
+        for _, obj in ipairs(getgc(true)) do
+            if typeof(obj) == "table" then
+                for key, value in pairs(obj) do
+                    if typeof(key) == "string" and key:lower():find("spread") and typeof(value) == "number" then
+                        obj[key] = 60
+                    end
+                end
+            end
+        end
     end
-
 end})
+
 
 local function ESP(model)
     local Connection;
@@ -148,126 +115,231 @@ local function ESP(model)
         healthOutline = Drawing.new("Line"),
         weapon = Drawing.new("Text"),
         distance = Drawing.new("Text"),
+        head = Drawing.new("Circle"),
+        headOutline = Drawing.new("Circle"),
+        skeleton = {},
+        skeletonOutline = {}
     }
 
-    local function Remove()
-        if Connection then Connection:Disconnect() end 
+    
+    for i = 1, 15 do
+        local line = Drawing.new("Line")
+        line.Color = Color3.fromRGB(255, 255, 255)
+        line.Thickness = 1
+        line.Visible = false
+        line.ZIndex = 2
+        table.insert(Drawings.skeleton, line)
+
+        local line = Drawing.new("Line")
+        line.Color = Color3.fromRGB(0, 0, 0)
+        line.Thickness = 1.5
+        line.Visible = false
+        table.insert(Drawings.skeletonOutline, line)
     end
-    model.Destroying:Connect(Remove) 
 
-	local update = function()
-
-       
-        
-		Connection = RunService.Heartbeat:Connect(function()
-            local Character = model and model.Character 
-            if Character then
-                local RootPart = Character and Character.HumanoidRootPart
-                local Humanoid = Character and Character:FindFirstChild("Humanoid")
-
-                local Position, Visible = Camera:WorldToViewportPoint(RootPart.CFrame.Position)
-                local weapon = Character:FindFirstChildWhichIsA("Tool") or "none"
-                if Visible and Toggles.ESP.Value and Humanoid.Health > 0 and model.Team ~= LocalPlayer.Team then
-                    local scale = 1 / (Position.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 1000
-                    local width, height = math.floor(4.5 * scale), math.floor(6 * scale)
-                    local x, y = math.floor(Position.X), math.floor(Position.Y)
-                    local xPosition, yPostion = math.floor(x - width * 0.5), math.floor((y - height * 0.5) + (0.5 * scale))
-
-                    local distance = (HumanoidRootPart.CFrame.Position - RootPart.CFrame.Position).Magnitude
-
-                    Drawings.box.Size = Vector2.new(width, height)
-                    Drawings.box.Position = Vector2.new(xPosition, yPostion)
-                    Drawings.boxOutline.Size = Drawings.box.Size
-                    Drawings.boxOutline.Position = Drawings.box.Position
-
-                    Drawings.box.Color = Options.Boxes_Color.Value
-                    Drawings.box.Thickness = 1
-                    Drawings.boxOutline.Color = Color3.fromRGB(0,0,0)
-                    Drawings.boxOutline.Thickness = 3
-
-                    Drawings.boxOutline.ZIndex = Drawings.box.ZIndex - 1
-                    Drawings.box.Visible = Toggles.Boxes.Value
-                    Drawings.boxOutline.Visible = Toggles.Boxes.Value
-
-                    Drawings.name.Text = model.Name
-                    Drawings.name.Size = math.max(math.min(math.abs(12.5 * scale), 12.5), 10)
-                    Drawings.name.Position = Vector2.new(x, (yPostion - Drawings.name.TextBounds.Y) - 2)
-                    Drawings.name.Color = Color3.fromRGB(255,255,255)
-                    Drawings.name.Outline = true
-                    Drawings.name.OutlineColor = Color3.fromRGB(0,0,0)
-                    Drawings.name.Visible = Toggles.Names.Value
-                    Drawings.name.Center = true
-
-                    Drawings.name.ZIndex = Drawings.box.ZIndex + 1
-                    
-                    local healthPercent = 100 / (Humanoid.MaxHealth / Humanoid.Health)
-		
-                    Drawings.healthOutline.From = Vector2.new(xPosition - 5, yPostion)
-                    Drawings.healthOutline.To = Vector2.new(xPosition - 5, yPostion + height)
-                    Drawings.health.From = Vector2.new(xPosition - 5, (yPostion + height) - 1)
-                    Drawings.health.To = Vector2.new(xPosition - 5, ((Drawings.health.From.Y - ((height / 100) * healthPercent))) + 2)
-
-                    Drawings.health.Color = Options.Health_Low.Value:Lerp(Options.Health_High.Value, healthPercent * 0.01)
-                    Drawings.healthOutline.Color = Color3.fromRGB(0,0,0)
-                    Drawings.healthOutline.Thickness = 3
-
-                    Drawings.healthOutline.ZIndex = Drawings.health.ZIndex - 1
-
-                    Drawings.health.Visible = Toggles.HealthBar.Value
-                    Drawings.healthOutline.Visible = Toggles.HealthBar.Value
-
-                    Drawings.weapon.Text = weapon.Name or weapon
-                    Drawings.weapon.Size = math.max(math.min(math.abs(11 * scale), 11), 10)
-                    Drawings.weapon.Position = Vector2.new(x, (yPostion + height) + (Drawings.weapon.TextBounds.Y * 0.25))
-                    Drawings.weapon.Color = Color3.fromRGB(255,255,255)
-                    Drawings.weapon.Outline = true
-                    Drawings.weapon.OutlineColor = Color3.fromRGB(0,0,0)
-
-                    Drawings.weapon.Visible = Toggles.Weapon.Value
-                    Drawings.weapon.Center = true
-
-                    Drawings.distance.Text = math.floor(distance).."(s)"
-                    Drawings.distance.Size = math.max(math.min(math.abs(11 * scale), 11), 10)
-                    Drawings.distance.Position = Vector2.new(x, (yPostion + height + 10) + (Drawings.distance.TextBounds.Y * 0.25))
-                    Drawings.distance.Color = Color3.fromRGB(255,255,255)
-                    Drawings.distance.Outline = true
-                    Drawings.distance.OutlineColor = Color3.fromRGB(0,0,0)
-
-                    Drawings.distance.Visible = Toggles.Distance.Value
-                    Drawings.distance.Center = true
-
-
-                else
-                    Drawings.box.Visible = false
-                    Drawings.boxOutline.Visible = false
-                    Drawings.name.Visible = false
-                    Drawings.health.Visible = false
-                    Drawings.healthOutline.Visible = false
-                    Drawings.weapon.Visible = false
-                    Drawings.distance.Visible = false
+    local function Remove()
+        if Connection then Connection:Disconnect() end
+        for _, drawing in pairs(Drawings) do
+            if typeof(drawing) == "table" then
+                for _, v in ipairs(drawing) do
+                    v:Remove()
                 end
             else
-                Drawings.box.Visible = false
-                Drawings.boxOutline.Visible = false
-                Drawings.name.Visible = false
-                Drawings.health.Visible = false
-                Drawings.healthOutline.Visible = false
-                Drawings.weapon.Visible = false
-                Drawings.distance.Visible = false
+                drawing:Remove()
             end
-            
+        end
+    end
+    model.Destroying:Connect(Remove)
+
+    local bones = {
+        {"Head", "UpperTorso"},
+        {"UpperTorso", "LowerTorso"},
+        {"LowerTorso", "LeftUpperLeg"},
+        {"LowerTorso", "RightUpperLeg"},
+        {"LeftUpperLeg", "LeftLowerLeg"},
+        {"RightUpperLeg", "RightLowerLeg"},
+        {"LeftLowerLeg", "LeftFoot"},
+        {"RightLowerLeg", "RightFoot"},
+        {"UpperTorso", "LeftUpperArm"},
+        {"UpperTorso", "RightUpperArm"},
+        {"LeftUpperArm", "LeftLowerArm"},
+        {"RightUpperArm", "RightLowerArm"},
+        {"LeftLowerArm", "LeftHand"},
+        {"RightLowerArm", "RightHand"},
+    }
+
+    local update = function()
+        Connection = RunService.Heartbeat:Connect(function()
+            local Character = model and model.Character
+            if Character then
+                local RootPart = Character:FindFirstChild("HumanoidRootPart")
+                local Humanoid = Character:FindFirstChild("Humanoid")
+                local Head = Character:FindFirstChild("Head")
+
+                if RootPart and Humanoid and Head and model.Team ~= LocalPlayer.Team then
+                    local Position, Visible = Camera:WorldToViewportPoint(RootPart.Position)
+                    local hPosition, Visible = Camera:WorldToViewportPoint(Head.Position)
+                    local weapon = Character:FindFirstChildWhichIsA("Tool") or { Name = "none" }
+
+                    if Visible and Toggles.ESP.Value and Humanoid.Health > 0  then
+                        local scale = 1 / (Position.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 1000
+                        local width, height = math.floor(4.5 * scale), math.floor(6 * scale)
+                        local x, y = math.floor(Position.X), math.floor(Position.Y)
+                        local xPosition, yPosition = math.floor(x - width * 0.5), math.floor((y - height * 0.5) + (0.5 * scale))
+
+                        local hx, hy = math.floor(hPosition.X), math.floor(hPosition.Y)
+                        local hxPosition, hyPosition = math.floor(hx - width * 0.5), math.floor((hy - height * 0.5) + (0.5 * scale))
+
+                        local distance = (HumanoidRootPart.Position - RootPart.Position).Magnitude
+
+                        -- Circle
+                        Drawings.head.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.head.Radius = scale - 1
+                        Drawings.head.ZIndex = 2
+                        Drawings.head.Thickness = 1
+                        Drawings.head.Position = Vector2.new(hx, hy)
+                        Drawings.head.Visible = Toggles.HeadCircle.Value
+
+                        Drawings.headOutline.Color = Color3.fromRGB(0, 0, 0)
+                        Drawings.headOutline.Radius = scale - 1
+                        Drawings.headOutline.ZIndex = 1
+                        Drawings.headOutline.Thickness = 1.5
+                        Drawings.headOutline.Position = Vector2.new(hx, hy)
+                        Drawings.headOutline.Visible = Toggles.HeadCircle.Value
+
+                        -- Box
+                        Drawings.box.Size = Vector2.new(width, height)
+                        Drawings.box.Position = Vector2.new(xPosition, yPosition)
+                        Drawings.box.Color = Options.Boxes_Color.Value
+                        Drawings.box.Thickness = 1
+                        Drawings.box.Visible = Toggles.Boxes.Value
+                        Drawings.box.ZIndex = 2
+
+                        Drawings.boxOutline.Size = Drawings.box.Size
+                        Drawings.boxOutline.Position = Drawings.box.Position
+                        Drawings.boxOutline.Color = Color3.fromRGB(0, 0, 0)
+                        Drawings.boxOutline.Thickness = 3
+                        Drawings.boxOutline.Visible = Toggles.Boxes.Value
+
+                        -- Name
+                        Drawings.name.Text = model.Name
+                        Drawings.name.Size = math.clamp(math.abs(12.5 * scale), 10, 12.5)
+                        Drawings.name.Position = Vector2.new(x, (yPosition - Drawings.name.TextBounds.Y) - 2)
+                        Drawings.name.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.name.Outline = true
+                        Drawings.name.OutlineColor = Color3.fromRGB(0, 0, 0)
+                        Drawings.name.Visible = Toggles.Names.Value
+                        Drawings.name.Center = true
+
+                        -- Health
+                        local healthPercent = 100 / (Humanoid.MaxHealth / Humanoid.Health)
+
+                        Drawings.healthOutline.From = Vector2.new(xPosition - 8, yPosition)
+                        Drawings.healthOutline.To = Vector2.new(xPosition - 8, yPosition + height)
+                        Drawings.healthOutline.Color = Color3.fromRGB(0, 0, 0)
+                        Drawings.healthOutline.Thickness = 3
+                        Drawings.healthOutline.Visible = Toggles.HealthBar.Value
+                        Drawings.health.ZIndex = 2
+
+                        Drawings.health.From = Vector2.new(xPosition - 8, (yPosition + height) - 1)
+                        Drawings.health.To = Vector2.new(xPosition - 8, ((Drawings.health.From.Y - ((height / 100) * healthPercent))) + 2)
+                        Drawings.health.Color = Options.Health_Low.Value:Lerp(Options.Health_High.Value, healthPercent * 0.01)
+                        Drawings.health.Visible = Toggles.HealthBar.Value
+                        
+
+                        -- Weapon
+                        Drawings.weapon.Text = weapon.Name
+                        Drawings.weapon.Size = math.clamp(math.abs(11 * scale), 10, 11)
+                        Drawings.weapon.Position = Vector2.new(x, (yPosition + height) + (Drawings.weapon.TextBounds.Y * 0.25))
+                        Drawings.weapon.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.weapon.Outline = true
+                        Drawings.weapon.OutlineColor = Color3.fromRGB(0, 0, 0)
+                        Drawings.weapon.Center = true
+                        Drawings.weapon.Visible = Toggles.Weapon.Value
+
+                        -- Distance
+                        Drawings.distance.Text = math.floor(distance) .. "(s)"
+                        Drawings.distance.Size = math.clamp(math.abs(11 * scale), 10, 11)
+                        Drawings.distance.Position = Vector2.new(x, (yPosition + height + 10) + (Drawings.distance.TextBounds.Y * 0.25))
+                        Drawings.distance.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.distance.Outline = true
+                        Drawings.distance.OutlineColor = Color3.fromRGB(0, 0, 0)
+                        Drawings.distance.Center = true
+                        Drawings.distance.Visible = Toggles.Distance.Value
+
+                        -- Skeleton
+                        if Toggles.Skeleton and Toggles.Skeleton.Value then
+                            local index = 1
+                            for _, bonePair in ipairs(bones) do
+                                local part0 = Character:FindFirstChild(bonePair[1])
+                                local part1 = Character:FindFirstChild(bonePair[2])
+                                local line = Drawings.skeleton[index]
+                                local line2 = Drawings.skeletonOutline[index]
+
+                                if part0 and part1 then
+                                    local p0, visible0 = Camera:WorldToViewportPoint(part0.Position)
+                                    local p1, visible1 = Camera:WorldToViewportPoint(part1.Position)
+
+                                    if visible0 and visible1 then
+                                        line.From = Vector2.new(p0.X, p0.Y)
+                                        line.To = Vector2.new(p1.X, p1.Y)
+                                        line.Visible = true
+
+                                        line2.From = Vector2.new(p0.X, p0.Y)
+                                        line2.To = Vector2.new(p1.X, p1.Y)
+                                        line2.Visible = true
+                                    else
+                                        line.Visible = false
+                                        line2.Visible = false
+                                    end
+                                else
+                                    line.Visible = false
+                                    line2.Visible = false
+                                end
+
+                                index += 1
+                            end
+                        else
+                            for _, line in ipairs(Drawings.skeleton) do
+                                line.Visible = false
+                            end
+
+                            for _, line in ipairs(Drawings.skeletonOutline) do
+                                line.Visible = false
+                            end
+                        end
+                    else
+                        for _, v in pairs(Drawings) do
+                            if typeof(v) == "table" then
+                                for _, line in ipairs(v) do line.Visible = false end
+                            else
+                                v.Visible = false
+                            end
+                        end
+                    end
+                end
+            else
+                for _, v in pairs(Drawings) do
+                    if typeof(v) == "table" then
+                        for _, line in ipairs(v) do line.Visible = false end
+                    else
+                        v.Visible = false
+                    end
+                end
+            end
         end)
-	end
-	coroutine.wrap(update)()   
+    end
+
+    coroutine.wrap(update)()
 end
 
-do -- Update ESP
+
+do
 	for _, v in pairs(Players:GetPlayers()) do
 		if v.Name ~= Players.LocalPlayer.Name then
 			coroutine.wrap(ESP)(v)
 		end      
 	end
-	--
 	Players.PlayerAdded:Connect(function(v)
 		task.delay(1, function()
 			coroutine.wrap(ESP)(v)
@@ -276,28 +348,40 @@ do -- Update ESP
 end 
 
 
+
 local GameFramework = getsenv(game:GetService("Players").LocalPlayer.PlayerGui.SE_Framework)
 
 local function GetClosestTarget()
     local closestPlayer = nil
     local shortestDistance = math.huge
-    local mouse = LocalPlayer:GetMouse()
-    
+
+    local mouseLocation = Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)
+    local localTeam = LocalPlayer.Team
+
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Team ~= LocalPlayer.Team then
-            local pos, onScreen = Camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
-            if onScreen then
-                local dist = (Vector2.new(pos.X, pos.Y) - Vector2.new(mouse.X, mouse.Y)).Magnitude
-                if dist < shortestDistance and dist < Options.FOV_Size.Value then
-                    shortestDistance = dist
-                    closestPlayer = player
+        if player ~= LocalPlayer and player.Team ~= localTeam then
+            local character = player.Character
+            if character then
+                local hrp = character:FindFirstChild("HumanoidRootPart")
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if hrp and humanoid and humanoid.Health > 0 then
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+                    if onScreen then
+                        local screenVector = Vector2.new(screenPos.X, screenPos.Y)
+                        local distance = (screenVector - mouseLocation).Magnitude
+                        if distance < shortestDistance and distance < Options.FOV_Size.Value then
+                            shortestDistance = distance
+                            closestPlayer = player
+                        end
+                    end
                 end
             end
         end
     end
-    
+
     return closestPlayer
 end
+
 
 local SilentFOV = Drawing.new("Circle")
 SilentFOV.Radius = Options.FOV_Size.Value
@@ -317,8 +401,12 @@ local OldBullet = GameFramework.BulletRaycast
 GameFramework.BulletRaycast = function(...)
     local Args = {...}
     local ClosestTarget = GetClosestTarget()
-    if ClosestTarget and ClosestTarget.Character and ClosestTarget.Character[Options.Targetr.Value] then
-        Args[2] = (ClosestTarget.Character[Options.Targetr.Value].CFrame.p - Args[1]).Unit * 1024
+    local character = ClosestTarget and ClosestTarget.Character
+    local targetPart = character and character:FindFirstChild(Options.Targetr.Value)
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+    if targetPart and hrp then
+        Args[2] = (targetPart.Position - Args[1]).Unit * 1024
     end
     return OldBullet(unpack(Args))
 end;
@@ -340,7 +428,6 @@ RunService.Heartbeat:Connect(function()
         SilentFOVOutline.Visible = false
     end
 end)
-
 
 
 

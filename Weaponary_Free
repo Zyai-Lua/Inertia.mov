@@ -1,5 +1,600 @@
---[[
-if ur lookin at this, go ahead and deobfuscate it.
---]]
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local VirtualInputManager = game:GetService('VirtualInputManager')
+local UserInputService = game:GetService('UserInputService')
+local RunService = game:GetService('RunService')
+local Workspace = game:GetService('Workspace')
+local Players = game:GetService('Players')
 
-local a;local b;for c,c in next,getgc(false)do if type(c)=="function"and not isexecutorclosure(c)then local d=debug.getinfo(c)if d.name=="accelerate"then a=c end;if d.name=="updateRNGbloomMulti"then b=c end end end;local c=game:GetService("Players")local d=game:GetService("ReplicatedStorage")local d=c.LocalPlayer;local e=workspace.CurrentCamera;local f=d.Character or d.CharacterAdded:Wait()d.CharacterAdded:Connect(function(a)f=a end)getgenv().global=getgenv()function global.declare(a,b,c,d)if a[b]==nil then a[b]=c elseif d then local a={"remove","Disconnect"}for a,a in a do pcall(function()c[a](c)end)end end;return a[b]end;declare(global,"services",{})function global.get(a)return services[a]end;declare(declare(services,"loop",{}),"cache",{})get("loop").new=function(a,b,c,d)if d==nil and(c==nil or typeof(c)=="boolean")then d=c;c=b end;a.cache[b]={["enabled"]=(not d),["func"]=c,["toggle"]=function(a,b)if b==nil then a.enabled=not a.enabled else a.enabled=b end end,["remove"]=function()a.cache[b]=nil end}return a.cache[b]end;declare(get("loop"),"connection",cloneref(game:GetService("RunService")).RenderStepped:Connect(function(a)for b,b in get("loop").cache do if b.enabled then local a,a=pcall(function()b.func(a)end)end end end),true)declare(services,"new",{})get("new").drawing=function(a,b)local a=Drawing.new(a)for b,c in b do pcall(function()a[b]=c end)end;return a end;declare(declare(services,"player",{}),"cache",{})get("player").find=function(a,b)for a,c in a.cache do if c.player==b then return a end end end;get("player").check=function(a,a)local a,b=pcall(function()local a=a:IsA("Player")and a.Character or a;local b={a.Humanoid,a.HumanoidRootPart}return b and a.Parent~=nil end)return a and b end;get("player").new=function(a,b)local function c(c)a.cache[c]={["player"]=b,["drawings"]={["box"]=get("new").drawing("Square",{Visible=false}),["boxFilled"]=get("new").drawing("Square",{Visible=false,Filled=true}),["boxOutline"]=get("new").drawing("Square",{Visible=false}),["name"]=get("new").drawing("Text",{Visible=false,Center=true}),["health"]=get("new").drawing("Line",{Visible=false}),["healthOutline"]=get("new").drawing("Line",{Visible=false}),["healthText"]=get("new").drawing("Text",{Visible=false,Center=false}),["distance"]=get("new").drawing("Text",{Visible=false,Center=true}),["weapon"]=get("new").drawing("Text",{Visible=false,Center=true}),["headcircles"]=get("new").drawing("Circle",{Visible=false}),["headcirclesoutline"]=get("new").drawing("Circle",{Visible=false}),["tracer"]=get("new").drawing("Line",{Visible=false}),["traceroutline"]=get("new").drawing("Line",{Visible=false})}}end;local function d(b)if a:check(b)then c(b)print("cashching")else local d;d=b.ChildAdded:Connect(function()if a:check(b)then c(b)d:Disconnect()end end)end end;if b.Character then d(b.Character)end;b.CharacterAdded:Connect(d)end;get("player").remove=function(a,b)if b:IsA("Player")then local b=a:find(b)if b then a:remove(b)end else local c=a.cache[b].drawings;a.cache[b]=nil;for a,a in c do a:Remove()end end end;get("player").update=function(a,b,c)if not a:check(b)then a:remove(b)end;local f=c.player;local g=b.HumanoidRootPart;local h=b.Humanoid;local i=c.drawings;if a:check(d)then c.distance=(d.Character.HumanoidRootPart.CFrame.Position-g.CFrame.Position).Magnitude end;local a=b:FindFirstChildWhichIsA("Tool")or"none"task.spawn(function()if b:FindFirstChild("Head")then local a,g=e:WorldToViewportPoint(g.CFrame.Position)local j,k=e:WorldToViewportPoint(b.Head.CFrame.Position)local k=features.visuals;local function l()if b.Humanoid.Health<1 then return false end;if not k or not k.enabled then return false end;local a=true;if k.teamCheck and f.Team and d.Team then a=f.Team~=d.Team end;return c.distance and c.distance<=(k.renderDistance or math.huge)and a end;local function c(a)if k.teamColor then a=f.TeamColor.Color end;return a end;local d=b:FindFirstChildWhichIsA("Tool")or"none"if g and b.Head then local b=1/(a.Z*math.tan(math.rad(e.FieldOfView*0.5))*2)*1000;local g,l=math.floor(4.5*b),math.floor(6*b)local a,m=math.floor(a.X),math.floor(a.Y)local j,n=math.floor(j.X),math.floor(j.Y)local m,o=math.floor(a-g*0.5),math.floor((m-l*0.5)+(0.5*b))i.box.Size=Vector2.new(g,l)i.box.Position=Vector2.new(m,o)i.boxFilled.Size=i.box.Size;i.boxFilled.Position=i.box.Position;i.boxOutline.Size=i.box.Size;i.boxOutline.Position=i.box.Position;i.box.Color=c(k.boxes.color)i.box.Thickness=1;i.boxFilled.Color=c(k.boxes.filled.color)i.boxFilled.Transparency=k.boxes.filled.transparency;i.boxOutline.Color=k.boxes.outline.color;i.boxOutline.Thickness=3;i.boxOutline.ZIndex=i.box.ZIndex-1;i.boxFilled.ZIndex=i.boxOutline.ZIndex-1;i.name.Text=f.Name;i.name.Size=math.max(math.min(math.abs(12.5*b),12.5),10)i.name.Position=Vector2.new(a,(o-i.name.TextBounds.Y)-2)i.name.Color=c(k.names.color)i.name.Outline=k.names.outline.enabled;i.name.OutlineColor=k.names.outline.color;i.name.ZIndex=i.box.ZIndex+1;local a=100/(h.MaxHealth/h.Health)i.healthOutline.From=Vector2.new(m-5,o)i.healthOutline.To=Vector2.new(m-5,o+l)i.health.From=Vector2.new(m-5,(o+l)-1)i.health.To=Vector2.new(m-5,((i.health.From.Y-((l/100)*a)))+2)i.healthText.Text="HP"..a;i.healthText.Size=math.max(math.min(math.abs(11*b),11),10)i.healthText.Position=Vector2.new(i.health.To.X-(i.healthText.TextBounds.X+3),(i.health.To.Y-(2/b)))i.health.Color=k.health.colorLow:Lerp(k.health.color,a*0.01)i.healthOutline.Color=k.health.outline.color;i.healthOutline.Thickness=6;i.health.Thickness=3;i.healthText.Color=i.health.Color;i.healthText.Outline=k.health.text.outline.enabled;i.healthText.OutlineColor=k.health.outline.color;i.healthOutline.ZIndex=i.health.ZIndex-1;i.weapon.Text=d.Name;i.weapon.Size=math.max(math.min(math.abs(11*b),11),10)i.weapon.Position=k.distance.enabled and Vector2.new(i.distance.Position.x,i.distance.Position.Y+(i.weapon.TextBounds.Y*0.75))or i.distance.Position;i.weapon.Color=c(k.weapon.color)i.weapon.Outline=k.weapon.outline.enabled;i.weapon.OutlineColor=k.weapon.outline.color;i.headcircles.Radius=b;i.headcircles.Position=Vector2.new(j,n)i.headcircles.ZIndex=2;i.headcircles.Color=k.headcircles.color;i.headcircles.Thickness=1;i.headcirclesoutline.Radius=b;i.headcirclesoutline.Position=Vector2.new(j,n)i.headcirclesoutline.ZIndex=1;i.headcirclesoutline.Color=k.headcircles.outline.color;i.headcirclesoutline.Thickness=2;i.tracer.From=Vector2.new(e.ViewportSize.X/2,e.ViewportSize.Y-(e.ViewportSize.Y))i.tracer.To=Vector2.new(j,n)i.tracer.ZIndex=2;i.tracer.Color=k.tracers.color;i.traceroutline.From=Vector2.new(e.ViewportSize.X/2,e.ViewportSize.Y-(e.ViewportSize.Y))i.traceroutline.To=Vector2.new(j,n)i.traceroutline.ZIndex=1;i.traceroutline.Color=k.tracers.outline.color;i.traceroutline.Thickness=2 else i.box.Visible=false;i.boxFilled.Visible=false;i.boxOutline.Visible=false;i.name.Visible=false;i.health.Visible=false;i.healthOutline.Visible=false;i.healthText.Visible=false;i.distance.Visible=false;i.weapon.Visible=false;i.headcircles.Visible=false;i.headcirclesoutline.Visible=false;i.tracer.Visible=false;i.traceroutline.Visible=false end;i.box.Visible=(l()and g and k.boxes.enabled)or false;i.boxFilled.Visible=(l()and i.box.Visible and k.boxes.filled.enabled)or false;i.boxOutline.Visible=(l()and i.box.Visible and k.boxes.outline.enabled)or false;i.name.Visible=(l()and g and k.names.enabled)or false;i.health.Visible=(l()and g and k.health.enabled)or false;i.healthOutline.Visible=(l()and i.health.Visible and k.health.outline.enabled)or false;i.healthText.Visible=(l()and i.health.Visible and k.health.text.enabled)or false;i.distance.Visible=(l()and g and k.distance.enabled)or false;i.weapon.Visible=(l()and g and k.weapon.enabled)or false;i.headcircles.Visible=(l()and g and k.headcircles.enabled)or false;i.headcirclesoutline.Visible=(l()and i.headcircles.Visible and k.headcircles.outline.enabled)or false;i.tracer.Visible=(l()and g and k.tracers.enabled)or false;i.traceroutline.Visible=(l()and i.tracer.Visible and k.tracers.outline.enabled)or false end;if b:FindFirstChild("Humanoid")and b.Humanoid.Health<1 then i.box.Visible=false;i.boxFilled.Visible=false;i.boxOutline.Visible=false;i.name.Visible=false;i.health.Visible=false;i.healthOutline.Visible=false;i.healthText.Visible=false;i.distance.Visible=false;i.weapon.Visible=false;i.headcircles.Visible=false;i.headcirclesoutline.Visible=false;i.tracer.Visible=false;i.traceroutline.Visible=false end end)end;declare(get("player"),"loop",get("loop"):new(function()for a,b in get("player").cache do get("player"):update(a,b)end end),true)declare(global,"features",{})features.toggle=function(a,b,c)if a[b]then if c==nil then a[b].enabled=not a[b].enabled else a[b].enabled=c end;if a[b].toggle then task.spawn(function()a[b]:toggle()end)end end end;declare(features,"visuals",{["enabled"]=false,["teamCheck"]=true,["teamColor"]=false,["renderDistance"]=3000,["boxes"]={["enabled"]=false,["color"]=Color3.fromRGB(136,8,8),["outline"]={["enabled"]=true,["color"]=Color3.fromRGB(0,0,0)},["filled"]={["enabled"]=true,["color"]=Color3.fromRGB(136,8,8),["transparency"]=0.25}},["names"]={["enabled"]=false,["color"]=Color3.fromRGB(136,8,8),["outline"]={["enabled"]=true,["color"]=Color3.fromRGB(0,0,0)}},["health"]={["enabled"]=false,["color"]=Color3.fromRGB(0,255,0),["colorLow"]=Color3.fromRGB(255,0,0),["outline"]={["enabled"]=true,["color"]=Color3.fromRGB(0,0,0)},["text"]={["enabled"]=false,["outline"]={["enabled"]=true}}},["distance"]={["enabled"]=false,["color"]=Color3.fromRGB(136,8,8),["outline"]={["enabled"]=true,["color"]=Color3.fromRGB(0,0,0)}},["weapon"]={["enabled"]=false,["color"]=Color3.fromRGB(136,8,8),["outline"]={["enabled"]=true,["color"]=Color3.fromRGB(0,0,0)}},["headcircles"]={["enabled"]=false,["color"]=Color3.fromRGB(136,8,8),["outline"]={["enabled"]=true,["color"]=Color3.fromRGB(0,0,0)}},["tracers"]={["enabled"]=false,["color"]=Color3.fromRGB(136,8,8),["outline"]={["enabled"]=true,["color"]=Color3.fromRGB(0,0,0)}}})for a,a in c:GetPlayers()do if a~=d and not get("player"):find(a)then get("player"):new(a)end end;declare(get("player"),"added",c.PlayerAdded:Connect(function(a)get("player"):new(a)end),true)declare(get("player"),"removing",c.PlayerRemoving:Connect(function(a)get("player"):remove(a)end),true)local c=workspace.CurrentCamera;local d=game:GetService("Players")local e=game:GetService("RunService")local f=game:GetService("GuiService")local g=game:GetService("UserInputService")local h=game:GetService("HttpService")local h=d.LocalPlayer;local i=h:GetMouse()local i=game.GetChildren;local i=d.GetPlayers;local j=c.WorldToScreenPoint;local k=c.WorldToViewportPoint;local k=c.GetPartsObscuringTarget;local l=game.FindFirstChild;local m=e.RenderStepped;local f=f.GetGuiInset;local f=g.GetMouseLocation;local m=coroutine.resume;local m=coroutine.create;local m=Vector3.new(0,0,0)local m=workspace.CurrentCamera;local m=false;local m={"Head","HumanoidRootPart"}local m=Drawing.new("Circle")m.Radius=200;m.Thickness=1;m.ZIndex=2;m.Color=Color3.fromRGB(255,255,255)local n=Drawing.new("Circle")n.Radius=200;n.Thickness=2;n.ZIndex=1;n.Color=Color3.fromRGB(0,0,0)local o=Drawing.new("Line")o.Thickness=1;o.ZIndex=2;o.Color=Color3.fromRGB(255,255,255)local p=Drawing.new("Line")p.Thickness=2;p.ZIndex=1;p.Color=Color3.fromRGB(0,0,0)local q=Drawing.new("Circle")q.Radius=5;q.Thickness=1;q.ZIndex=2;q.Color=Color3.fromRGB(255,255,255)local r=Drawing.new("Circle")r.Radius=5;r.Thickness=2;r.ZIndex=1;r.Color=Color3.fromRGB(0,0,0)local s={Silent={Enabled=false,TargetPart="Head",HitChance=100,TeamCheck=false,ForceHead=false,HealthCheck=false,VisibleCheck=false,Snapline=false,Snapcircle=false,SnaplineColor=Color3.fromRGB(136,8,8),SnapcircleColor=Color3.fromRGB(136,8,8),VisibleText=false,Fov=false,Dynamic=false,Radius=200,Sides=100,Color=Color3.fromRGB(136,8,8)},HBE={Enabled=false,X=1,Y=1,Z=1,Material="ForceField",Transparency=0.5},PlayerMods={WalkSpeed=false,Speed=16,JumpPower=false,Power=23},GunMods={Enabled=false,NoRecoil=false,NoSpread=false,FastFire=false,InstantReload=false}}local t={Raycast={ArgCountRequired=3,Args={"Instance","Vector3","Vector3","RaycastParams"}}}local function u(a)local a,b=j(c,a)return Vector2.new(a.X,a.Y),b end;local function j(a,b)local c=0;if#a<b.ArgCountRequired then return false end;for a,d in next,a do if typeof(d)==b.Args[a]then c=c+1 end end;return c>=b.ArgCountRequired end;local function v(a,b)return(b-a).Unit*1000 end;local function w()return f(g)end;local function f(a)local a=a.Character;local b=h.Character;if not(a or b)then return end;local d=l(a,"Head")or l(a,"HumanoidRootPart")if not d then return end;local a,b={d.Position,b,a},{b,a}local a=#k(c,a,b)return((a==0 and true)or(a>0 and false))end;local function g()local a;local b=math.huge;for c,c in next,i(d)do if c==h then continue end;if s.Silent.TeamCheck and c.Team==h.Team then continue end;local d=c.Character;if not d then continue end;if s.Silent.VisibleCheck and not f(c)then continue end;local c=l(d,"HumanoidRootPart")local e=l(d,"Humanoid")local d=l(d,"Head")if not c or not e or e.Health<=0 or not d then continue end;local c,e=u(c.Position)if not e then continue end;local c=(w()-c).Magnitude;if c<=m.Radius and c<b then a=d;b=c end end;return a end;local d=loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Linoria'))()local f=loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/LinoriaTheme'))()local i=loadstring(game:HttpGet('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/refs/heads/main/addons/SaveManager.lua'))()local k=d:CreateWindow({Title='Inertia | <font color=\"#008000\">Free</font> | Weaponary',Center=true,AutoShow=true,TabPadding=8,MenuFadeTime=0.2})local k={Combat=k:AddTab('Combat'),Visuals=k:AddTab('Visuals'),Misc=k:AddTab('Misc'),['UI Settings']=k:AddTab('UI Settings')}local l=k.Combat:AddLeftGroupbox('Silent Aim')local u=k.Combat:AddLeftGroupbox('FOV')local w=k.Misc:AddLeftGroupbox('Exploits')local x=k.Misc:AddLeftGroupbox('Player')local y=k.Visuals:AddLeftGroupbox('Main')local z=k.Visuals:AddLeftGroupbox('Settings')x:AddToggle('WalkSpeed',{Text='Walk Speed',Default=false,Tooltip='',Callback=function(a)s.PlayerMods.WalkSpeed=a;if not a then h.Character.Humanoid.WalkSpeed=16 end end})x:AddSlider('HitChance',{Text='Speed',Default=16,Min=0,Max=50,Rounding=1.0,Compact=true,Callback=function(a)s.PlayerMods.Speed=a end})x:AddToggle('WalkSpeed',{Text='Jump Power',Default=false,Tooltip='',Callback=function(a)s.PlayerMods.JumpPower=a;if not a then h.Character.Humanoid.UseJumpPower=true;h.Character.Humanoid.JumpHeight=7.2 end end})x:AddSlider('HitChance',{Text='Power',Default=23,Min=0,Max=50,Rounding=1.0,Compact=true,Callback=function(a)s.PlayerMods.Power=a end})w:AddToggle('WalkSpeed',{Text='No Recoil',Default=false,Tooltip='',Callback=function(a)s.GunMods.NoRecoil=a end})w:AddToggle('WalkSpeed',{Text='No Spread',Default=false,Tooltip='',Callback=function(a)s.GunMods.NoSpread=a end})w:AddToggle('WalkSpeed',{Text='Fast Fire',Default=false,Tooltip='',Callback=function(a)s.GunMods.FastFire=a end})w:AddToggle('WalkSpeed',{Text='Instant Reload',Default=false,Tooltip='',Callback=function(a)s.GunMods.InstantReload=a end})y:AddToggle('FOV',{Text='Enabled',Default=false,Tooltip='enables esp',Callback=function(a)features.visuals.enabled=a end})y:AddToggle('FOV',{Text='Boxes',Default=false,Tooltip='enables box',Callback=function(a)features.visuals.boxes.enabled=a end}):AddColorPicker('FOVColor',{Default=Color3.fromRGB(136,8,8),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.boxes.color=a end})y:AddToggle('FOV',{Text='Filled',Default=true,Tooltip='enables filled boxes',Callback=function(a)features.visuals.boxes.filled.enabled=a end}):AddColorPicker('Filled',{Default=Color3.fromRGB(136,8,8),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.boxes.filled.color=a end})y:AddToggle('FOV',{Text='Names',Default=false,Tooltip='enables names',Callback=function(a)features.visuals.names.enabled=a end}):AddColorPicker('Filled',{Default=Color3.fromRGB(136,8,8),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.names.color=a end})y:AddToggle('FOV',{Text='Health',Default=false,Tooltip='enables healthbars',Callback=function(a)features.visuals.health.enabled=a end}):AddColorPicker('Filled',{Default=Color3.new(0,0.666667,0),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.health.color=a end}):AddColorPicker('Filled',{Default=Color3.new(1,0,0),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.health.colorLow=a end})y:AddToggle('FOV',{Text='Health Text',Default=false,Tooltip='enables healthbars',Callback=function(a)features.visuals.health.text.enabled=a end})y:AddToggle('FOV',{Text='Weapon',Default=false,Tooltip='enables names',Callback=function(a)features.visuals.weapon.enabled=a end}):AddColorPicker('Filled',{Default=Color3.fromRGB(136,8,8),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.weapon.color=a end})y:AddToggle('FOV',{Text='Head Circles',Default=false,Tooltip='enables names',Callback=function(a)features.visuals.headcircles.enabled=a end}):AddColorPicker('Filled',{Default=Color3.fromRGB(136,8,8),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.headcircles.color=a end})y:AddToggle('FOV',{Text='Tracers',Default=false,Tooltip='enables names',Callback=function(a)features.visuals.tracers.enabled=a end}):AddColorPicker('Filled',{Default=Color3.fromRGB(136,8,8),Title='FOV Color',Transparency=0,Callback=function(a)features.visuals.tracers.color=a end})y:AddDropdown('HitPart',{Values={'Bottom','Top','Middle','Mouse'},Default=1,Multi=false,Text='Tracer Orgin',Tooltip='tracer orgin',Callback=function(a)end})z:AddToggle('FOV',{Text='Team Check',Default=true,Tooltip='enables esp',Callback=function(a)features.visuals.teamCheck=a end})z:AddToggle('FOV',{Text='Health Check',Default=false,Tooltip='enables esp',Callback=function(a)end})z:AddToggle('FOV',{Text='Visible Check',Default=false,Tooltip='enables esp',Callback=function(a)end})z:AddSlider('HitChance',{Text='Max Distance',Default=1000,Min=0,Max=5000,Rounding=1.0,Compact=true,Callback=function(a)features.visuals.renderDistance=a end})l:AddToggle('SilentEnabled',{Text='Enabled',Default=false,Tooltip='enables silent aim',Callback=function(a)s.Silent.Enabled=a end})l:AddToggle('TeamCheck',{Text='Team Check',Default=false,Tooltip='enables team check',Callback=function(a)s.Silent.TeamCheck=a end})l:AddToggle('HealthCheck',{Text='Health Check',Default=false,Tooltip='enables health check',Callback=function(a)s.Silent.HealthCheck=a end})l:AddToggle('VisibleCheck',{Text='Visible Check',Default=false,Tooltip='enables visible check',Callback=function(a)s.Silent.VisibleCheck=a end})l:AddSlider('HitChance',{Text='Hit Chance',Default=100,Min=0,Max=100,Rounding=1.0,Compact=true,Callback=function(a)s.Silent.HitChance=a end})l:AddDropdown('HitPart',{Values={'Head','HumanoidRootPart'},Default=1,Multi=false,Text='Hit Part',Tooltip='hit part of the silent aim',Callback=function(a)s.Silent.TargetPart=a end})u:AddToggle('FOV',{Text='Enabled',Default=false,Tooltip='enables fov',Callback=function(a)s.Silent.Fov=a end}):AddColorPicker('FOVColor',{Default=Color3.fromRGB(136,8,8),Title='FOV Color',Transparency=0,Callback=function(a)s.Silent.Color=a end})u:AddToggle('Dynamic',{Text='Dynamic',Default=false,Tooltip='enables dynamic fov',Callback=function(a)s.Silent.Dynamic=a end})u:AddToggle('Line',{Text='Snapline',Default=false,Tooltip='enables snapline',Callback=function(a)s.Silent.Snapline=a end}):AddColorPicker('SnapLineColor',{Default=Color3.fromRGB(136,8,8),Title='Snapline Color',Transparency=0,Callback=function(a)s.Silent.SnaplineColor=a end})u:AddToggle('Circle',{Text='Snapcircle',Default=false,Tooltip='enables snapcircle',Callback=function(a)s.Silent.Snapcircle=a end}):AddColorPicker('SnapcircleColor',{Default=Color3.fromRGB(136,8,8),Title='Snapcircle Color',Transparency=0,Callback=function(a)s.Silent.SnapcircleColor=a end})u:AddSlider('Radius',{Text='Radius',Default=200,Min=0,Max=2000,Rounding=1.0,Compact=true,Callback=function(a)s.Silent.Radius=a end})u:AddSlider('Radius',{Text='Sides',Default=100,Min=0,Max=1000,Rounding=1.0,Compact=true,Callback=function(a)s.Silent.Sides=a end})local l;l=hookmetamethod(game,"__namecall",newcclosure(function(...)local a=getnamecallmethod()local b={...}local c=b[1]if s.Silent.Enabled and c==workspace and not checkcaller()then if a=="Raycast"then if j(b,t.Raycast)and math.random(0,100)<=s.Silent.HitChance then local a=b[2]local c=g()if c then b[3]=v(a,c.Position)return l(unpack(b))end end end end;return l(...)end))local j;j=hookfunction(a,function(...)local a={...}if s.GunMods.NoRecoil then return nil end;return j(unpack(a))end)local a;a=hookfunction(b,function(...)local b={...}if s.GunMods.NoSpread then b[1]["CurrentAccuracy"]=0 end;if s.GunMods.FastFire then b[1]["WeaponStats"]["FireRate"]=0.1 end;if s.GunMods.InstantReload then b[1]["WeaponStats"]["Reload_TotalTime"]=0.01;b[1]["WeaponStats"]["Reload_AmmoFull"]=0.01 end;return a(unpack(b))end)e.RenderStepped:Connect(function()o.Color=s.Silent.SnaplineColor;q.Color=s.Silent.SnapcircleColor;if s.PlayerMods.WalkSpeed then if not h.Character then return end;h.Character.Humanoid.WalkSpeed=s.PlayerMods.Speed end;if s.PlayerMods.JumpPower then if not h.Character then return end;h.Character.Humanoid.UseJumpPower=false;h.Character.Humanoid.JumpHeight=s.PlayerMods.Power end;if s.Silent.Fov and s.Silent.Enabled then local a=s.Silent.Radius;if c.FieldOfView<70 then a=s.Silent.Radius*(70/c.FieldOfView)elseif c.FieldOfView>70 then a=s.Silent.Radius*(70/c.FieldOfView)end;m.Radius=math.floor(a)m.NumSides=s.Silent.Sides;m.Color=s.Silent.Color;n.NumSides=s.Silent.Sides;n.Radius=math.floor(a)m.Position=Vector2.new(c.ViewportSize.X/2,c.ViewportSize.Y/2)n.Position=Vector2.new(c.ViewportSize.X/2,c.ViewportSize.Y/2)m.Visible=true;n.Visible=true else m.Visible=false;n.Visible=false end;if s.Silent.Enabled then local a=g()if a then local a,b=c:WorldToViewportPoint(a.Position)if b then local a,b=math.floor(a.X),math.floor(a.Y)if s.Silent.Snapline then o.From=Vector2.new(c.ViewportSize.X/2,c.ViewportSize.Y/2)o.To=Vector2.new(a,b)o.Color=s.Silent.SnaplineColor;p.From=Vector2.new(c.ViewportSize.X/2,c.ViewportSize.Y/2)p.To=Vector2.new(a,b)p.Color=Color3.fromRGB(0,0,0)o.Visible=true;p.Visible=true else o.Visible=false;p.Visible=false end;if s.Silent.Snapcircle then q.Position=Vector2.new(a,b)q.Color=s.Silent.SnapcircleColor;q.Visible=true;r.Position=Vector2.new(a,b)r.Color=Color3.fromRGB(0,0,0)r.Visible=true else q.Visible=false;r.Visible=false end else o.Visible=false;p.Visible=false;q.Visible=false;r.Visible=false end else o.Visible=false;p.Visible=false;q.Visible=false;r.Visible=false end else o.Visible=false;p.Visible=false;q.Visible=false;r.Visible=false end end)d:SetWatermarkVisibility(true)local a=tick()local b=0;local c=60;WatermarkConnection=e.RenderStepped:Connect(function()b+=1;if(tick()-a)>=1 then c=b;a=tick()b=0 end;d:SetWatermark(('Inertia | %s fps | %s ms'):format(math.floor(c),math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())))end)d.KeybindFrame.Visible=true;d:OnUnload(function()WatermarkConnection:Disconnect()WatermarkConnection=nil;print('Unloaded!')d.Unloaded=true end)local a=k['UI Settings']:AddLeftGroupbox('Menu')a:AddButton('Unload',function()d:Unload()end)a:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind',{Default='End',NoUI=true,Text='Menu keybind'})d.ToggleKeybind=Options.MenuKeybind;f:SetLibrary(d)i:SetLibrary(d)i:IgnoreThemeSettings()i:SetIgnoreIndexes({'MenuKeybind'})f:SetFolder('Inertia')i:SetFolder('Inertia/Life Sentence')i:BuildConfigSection(k['UI Settings'])f:ApplyToTab(k['UI Settings'])i:LoadAutoloadConfig()
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
+local Humanoid = Character.Humanoid
+
+local Target
+
+local originalSpreadValues = {}
+local originalRecoilValues = {}
+local originalFirerateValues = {}
+
+local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
+
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Linoria'))()
+local ThemeManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/LinoriaTheme'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+local FrameCounter, FrameTimer, FPS,StartTime = 0,0,60, tick()
+
+local Window = Library:CreateWindow({
+
+	Title = 'Rivals',
+	Center = true,
+	AutoShow = true,
+	TabPadding = 8,
+	MenuFadeTime = 0.2
+})
+
+local Tabs = {
+	Combat = Window:AddTab('Combat'),
+    Visuals = Window:AddTab('Visuals'),
+    Misc = Window:AddTab('Miscellaneous'),
+	['UI Settings'] = Window:AddTab('UI Settings'),
+}
+
+local PlayerVisuals = Tabs.Visuals:AddLeftGroupbox('Player ESP')
+
+PlayerVisuals:AddToggle('ESP', {Text = 'Enabled',Default = false,Tooltip = 'Enables ESP',})
+PlayerVisuals:AddToggle('Boxes', {Text = 'Boxes',Default = false,Tooltip = 'Enables Boxes',}):AddColorPicker('Boxes_Color', {Default = Color3.fromRGB(255, 255, 255),Title = 'Color',Transparency = 0,})
+PlayerVisuals:AddToggle('Names', {Text = 'Names',Default = false,Tooltip = 'Enables Names',})
+PlayerVisuals:AddToggle('HealthBar', {Text = 'Health Bar',Default = false,Tooltip = 'Enables Health Bars',}):AddColorPicker('Health_High', {Default = Color3.fromRGB(0, 255, 0),Title = 'Color',Transparency = 0,}):AddColorPicker('Health_Low', {Default = Color3.fromRGB(255, 0, 0),Title = 'Color',Transparency = 0,})
+PlayerVisuals:AddToggle('Weapon', {Text = 'Weapon',Default = false,Tooltip = 'Enables Weapons',})
+PlayerVisuals:AddToggle('Distance', {Text = 'Distance',Default = false,Tooltip = 'Enables Distances',})
+PlayerVisuals:AddToggle('Skeleton', {Text = 'Skeleton', Default = false, Tooltip = 'Draws skeleton bones'})
+PlayerVisuals:AddToggle('HeadCircle', {Text = 'Head Circle', Default = false, Tooltip = 'Draws Circle Around Head'})
+
+local SilentAim = Tabs.Combat:AddLeftGroupbox('Silent Aim')
+
+SilentAim:AddToggle('Silent', {Text = 'Enabled',Default = false,Tooltip = 'Enables Silent Aim',})
+SilentAim:AddToggle('ShowFOV', {Text = 'Show FOV',Default = false,Tooltip = 'Enables FOV Circle On Screen',}):AddColorPicker('FOV_Color', {Default = Color3.fromRGB(255, 255, 255),Title = 'Color',Transparency = 0,})
+SilentAim:AddSlider('Hit_Chance', {Text = 'Hit Chance',Default = 100,Min = 1,Max = 100,Rounding = 1,Compact = false,})
+SilentAim:AddSlider('FOV_Size', {Text = 'Size',Default = 100,Min = 1,Max = 1000,Rounding = 1,Compact = false,})
+SilentAim:AddDropdown('Targetr', {Values = { 'Head','HumanoidRootPart'},Default = 1,Multi = false,Text = 'Target Part',})
+
+
+
+local PlrMods = Tabs.Misc:AddLeftGroupbox('Player Mods')
+
+PlrMods:AddToggle('Walkspeed', {Text = 'Enabled',Default = false,Tooltip = 'Enables Silent Aim',Callback = function(val)
+    if val then
+        Humanoid.WalkSpeed = Options.Speed.Value
+    else
+        Humanoid.WalkSpeed = 11
+    end
+end})
+PlrMods:AddSlider('Speed', {Text = 'Speed',Default = 11,Min = 1,Max = 100,Rounding = 1,Compact = false,})
+PlrMods:AddToggle('NoClip', {Text = 'No-Clip',Default = false,Tooltip = 'No Clip',Callback = function(val)
+    if not val then
+        for i,v in pairs(Character:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide == true then
+                v.CanCollide = false
+            end
+        end
+    end
+end})
+
+local Flymovement = {
+    forward = 0,
+    right = 0,
+    up = 0
+}
+
+local flying = false
+local flyConnection
+
+PlrMods:AddToggle('Fly', {
+    Text = 'Flight',
+    Default = false,
+    Tooltip = 'Enables Flight (CFrame)',
+    Callback = function(val)
+        flying = val
+
+        if val then
+            local cam = workspace.CurrentCamera
+            flyConnection = RunService.RenderStepped:Connect(function(dt)
+                if not flying then return end
+
+                local root = HumanoidRootPart
+                local speed = Options.FlySpeed.Value
+                local moveDir = (cam.CFrame.LookVector * Flymovement.forward + cam.CFrame.RightVector * Flymovement.right + Vector3.yAxis * Flymovement.up)
+                
+                if moveDir.Magnitude > 0 then
+                    moveDir = moveDir.Unit
+                    root.CFrame = root.CFrame + moveDir * speed * dt
+                end
+            end)
+        else
+            if flyConnection then
+                flyConnection:Disconnect()
+                flyConnection = nil
+            end
+        end
+    end
+})
+
+PlrMods:AddSlider('FlySpeed', {
+    Text = 'Speed',
+    Default = 11,
+    Min = 1,
+    Max = 100,
+    Rounding = 1,
+    Compact = false,
+})
+
+local antiAimConn
+
+PlrMods:AddSlider("AASpinSpeed", {
+    Text = "Spin Speed",
+    Default = 100,
+    Min = 10,
+    Max = 1000,
+    Rounding = 1
+})
+
+PlrMods:AddToggle("AntiAimToggle", {
+    Text = "Enable Anti-Aim (Spin)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local hrp = HumanoidRootPart
+            local humanoid = hrp.Parent:FindFirstChildOfClass("Humanoid")
+
+
+
+            antiAimConn = RunService.RenderStepped:Connect(function(dt)
+                local speed = Options.AASpinSpeed.Value
+                local angle = tick() * speed % 360
+                hrp.CFrame = CFrame.new(hrp.Position) * CFrame.Angles(0, math.rad(angle), 0)
+            end)
+        else
+            if antiAimConn then
+                antiAimConn:Disconnect()
+                antiAimConn = nil
+            end
+
+
+        end
+    end
+})
+
+
+local function ESP(model)
+    local Connection;
+    local Drawings = {
+        box = Drawing.new("Square"),
+        boxOutline = Drawing.new("Square"),
+        name = Drawing.new("Text"),
+        health = Drawing.new("Line"),
+        healthOutline = Drawing.new("Line"),
+        weapon = Drawing.new("Text"),
+        distance = Drawing.new("Text"),
+        head = Drawing.new("Circle"),
+        headOutline = Drawing.new("Circle"),
+        skeleton = {},
+        skeletonOutline = {}
+    }
+
+    
+    for i = 1, 15 do
+        local line = Drawing.new("Line")
+        line.Color = Color3.fromRGB(255, 255, 255)
+        line.Thickness = 1
+        line.Visible = false
+        line.ZIndex = 2
+        table.insert(Drawings.skeleton, line)
+
+        local line = Drawing.new("Line")
+        line.Color = Color3.fromRGB(0, 0, 0)
+        line.Thickness = 1.5
+        line.Visible = false
+        table.insert(Drawings.skeletonOutline, line)
+    end
+
+    local function Remove()
+        if Connection then Connection:Disconnect() end
+        for _, drawing in pairs(Drawings) do
+            if typeof(drawing) == "table" then
+                for _, v in ipairs(drawing) do
+                    v:Remove()
+                end
+            else
+                drawing:Remove()
+            end
+        end
+    end
+    model.Destroying:Connect(Remove)
+
+    local bones = {
+        {"Head", "UpperTorso"},
+        {"UpperTorso", "LowerTorso"},
+        {"LowerTorso", "LeftUpperLeg"},
+        {"LowerTorso", "RightUpperLeg"},
+        {"LeftUpperLeg", "LeftLowerLeg"},
+        {"RightUpperLeg", "RightLowerLeg"},
+        {"LeftLowerLeg", "LeftFoot"},
+        {"RightLowerLeg", "RightFoot"},
+        {"UpperTorso", "LeftUpperArm"},
+        {"UpperTorso", "RightUpperArm"},
+        {"LeftUpperArm", "LeftLowerArm"},
+        {"RightUpperArm", "RightLowerArm"},
+        {"LeftLowerArm", "LeftHand"},
+        {"RightLowerArm", "RightHand"},
+    }
+
+    local update = function()
+        Connection = RunService.Heartbeat:Connect(function()
+            local Character = model and model.Character
+            if Character then
+                local RootPart = Character:FindFirstChild("HumanoidRootPart")
+                local Humanoid = Character:FindFirstChild("Humanoid")
+                local Head = Character:FindFirstChild("Head")
+
+                if RootPart and Humanoid and Head and model.Team ~= LocalPlayer.Team then
+                    local Position, Visible = Camera:WorldToViewportPoint(RootPart.Position)
+                    local hPosition, Visible = Camera:WorldToViewportPoint(Head.Position)
+                    local weapon = Character:FindFirstChildWhichIsA("Tool") or { Name = "none" }
+
+                    if Visible and Toggles.ESP.Value and Humanoid.Health > 0  then
+                        local scale = 1 / (Position.Z * math.tan(math.rad(Camera.FieldOfView * 0.5)) * 2) * 1000
+                        local width, height = math.floor(4.5 * scale), math.floor(6 * scale)
+                        local x, y = math.floor(Position.X), math.floor(Position.Y)
+                        local xPosition, yPosition = math.floor(x - width * 0.5), math.floor((y - height * 0.5) + (0.5 * scale))
+
+                        local hx, hy = math.floor(hPosition.X), math.floor(hPosition.Y)
+                        local hxPosition, hyPosition = math.floor(hx - width * 0.5), math.floor((hy - height * 0.5) + (0.5 * scale))
+
+                        local distance = (HumanoidRootPart.Position - RootPart.Position).Magnitude
+
+                        -- Circle
+                        Drawings.head.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.head.Radius = scale - 1
+                        Drawings.head.ZIndex = 2
+                        Drawings.head.Thickness = 1
+                        Drawings.head.Position = Vector2.new(hx, hy)
+                        Drawings.head.Visible = Toggles.HeadCircle.Value
+
+                        Drawings.headOutline.Color = Color3.fromRGB(0, 0, 0)
+                        Drawings.headOutline.Radius = scale - 1
+                        Drawings.headOutline.ZIndex = 1
+                        Drawings.headOutline.Thickness = 1.5
+                        Drawings.headOutline.Position = Vector2.new(hx, hy)
+                        Drawings.headOutline.Visible = Toggles.HeadCircle.Value
+
+                        -- Box
+                        Drawings.box.Size = Vector2.new(width, height)
+                        Drawings.box.Position = Vector2.new(xPosition, yPosition)
+                        Drawings.box.Color = Options.Boxes_Color.Value
+                        Drawings.box.Thickness = 1
+                        Drawings.box.Visible = Toggles.Boxes.Value
+                        Drawings.box.ZIndex = 2
+
+                        Drawings.boxOutline.Size = Drawings.box.Size
+                        Drawings.boxOutline.Position = Drawings.box.Position
+                        Drawings.boxOutline.Color = Color3.fromRGB(0, 0, 0)
+                        Drawings.boxOutline.Thickness = 3
+                        Drawings.boxOutline.Visible = Toggles.Boxes.Value
+
+                        -- Name
+                        Drawings.name.Text = model.Name
+                        Drawings.name.Size = math.clamp(math.abs(12.5 * scale), 10, 12.5)
+                        Drawings.name.Position = Vector2.new(x, (yPosition - Drawings.name.TextBounds.Y) - 2)
+                        Drawings.name.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.name.Outline = true
+                        Drawings.name.OutlineColor = Color3.fromRGB(0, 0, 0)
+                        Drawings.name.Visible = Toggles.Names.Value
+                        Drawings.name.Center = true
+
+                        -- Health
+                        local healthPercent = 100 / (Humanoid.MaxHealth / Humanoid.Health)
+
+                        Drawings.healthOutline.From = Vector2.new(xPosition - 8, yPosition)
+                        Drawings.healthOutline.To = Vector2.new(xPosition - 8, yPosition + height)
+                        Drawings.healthOutline.Color = Color3.fromRGB(0, 0, 0)
+                        Drawings.healthOutline.Thickness = 3
+                        Drawings.healthOutline.Visible = Toggles.HealthBar.Value
+                        Drawings.health.ZIndex = 2
+
+                        Drawings.health.From = Vector2.new(xPosition - 8, (yPosition + height) - 1)
+                        Drawings.health.To = Vector2.new(xPosition - 8, ((Drawings.health.From.Y - ((height / 100) * healthPercent))) + 2)
+                        Drawings.health.Color = Options.Health_Low.Value:Lerp(Options.Health_High.Value, healthPercent * 0.01)
+                        Drawings.health.Visible = Toggles.HealthBar.Value
+                        
+
+                        -- Weapon
+                        Drawings.weapon.Text = weapon.Name
+                        Drawings.weapon.Size = math.clamp(math.abs(11 * scale), 10, 11)
+                        Drawings.weapon.Position = Vector2.new(x, (yPosition + height) + (Drawings.weapon.TextBounds.Y * 0.25))
+                        Drawings.weapon.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.weapon.Outline = true
+                        Drawings.weapon.OutlineColor = Color3.fromRGB(0, 0, 0)
+                        Drawings.weapon.Center = true
+                        Drawings.weapon.Visible = Toggles.Weapon.Value
+
+                        -- Distance
+                        Drawings.distance.Text = math.floor(distance) .. "(s)"
+                        Drawings.distance.Size = math.clamp(math.abs(11 * scale), 10, 11)
+                        Drawings.distance.Position = Vector2.new(x, (yPosition + height + 10) + (Drawings.distance.TextBounds.Y * 0.25))
+                        Drawings.distance.Color = Color3.fromRGB(255, 255, 255)
+                        Drawings.distance.Outline = true
+                        Drawings.distance.OutlineColor = Color3.fromRGB(0, 0, 0)
+                        Drawings.distance.Center = true
+                        Drawings.distance.Visible = Toggles.Distance.Value
+
+                        -- Skeleton
+                        if Toggles.Skeleton and Toggles.Skeleton.Value then
+                            local index = 1
+                            for _, bonePair in ipairs(bones) do
+                                local part0 = Character:FindFirstChild(bonePair[1])
+                                local part1 = Character:FindFirstChild(bonePair[2])
+                                local line = Drawings.skeleton[index]
+                                local line2 = Drawings.skeletonOutline[index]
+
+                                if part0 and part1 then
+                                    local p0, visible0 = Camera:WorldToViewportPoint(part0.Position)
+                                    local p1, visible1 = Camera:WorldToViewportPoint(part1.Position)
+
+                                    if visible0 and visible1 then
+                                        line.From = Vector2.new(p0.X, p0.Y)
+                                        line.To = Vector2.new(p1.X, p1.Y)
+                                        line.Visible = true
+
+                                        line2.From = Vector2.new(p0.X, p0.Y)
+                                        line2.To = Vector2.new(p1.X, p1.Y)
+                                        line2.Visible = true
+                                    else
+                                        line.Visible = false
+                                        line2.Visible = false
+                                    end
+                                else
+                                    line.Visible = false
+                                    line2.Visible = false
+                                end
+
+                                index += 1
+                            end
+                        else
+                            for _, line in ipairs(Drawings.skeleton) do
+                                line.Visible = false
+                            end
+
+                            for _, line in ipairs(Drawings.skeletonOutline) do
+                                line.Visible = false
+                            end
+                        end
+                    else
+                        for _, v in pairs(Drawings) do
+                            if typeof(v) == "table" then
+                                for _, line in ipairs(v) do line.Visible = false end
+                            else
+                                v.Visible = false
+                            end
+                        end
+                    end
+                end
+            else
+                for _, v in pairs(Drawings) do
+                    if typeof(v) == "table" then
+                        for _, line in ipairs(v) do line.Visible = false end
+                    else
+                        v.Visible = false
+                    end
+                end
+            end
+        end)
+    end
+
+    coroutine.wrap(update)()
+end
+
+
+do
+	for _, v in pairs(Players:GetPlayers()) do
+		if v.Name ~= Players.LocalPlayer.Name then
+			coroutine.wrap(ESP)(v)
+		end      
+	end
+	Players.PlayerAdded:Connect(function(v)
+		task.delay(1, function()
+			coroutine.wrap(ESP)(v)
+		end)
+	end) 
+end 
+
+
+
+
+
+local function IsPlayerValid(player)
+    if player == LocalPlayer then return false end
+    if not player.Character then return false end
+
+    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return false end
+
+    if player.Team == LocalPlayer.Team then
+        return false
+    end
+
+    return true
+end
+
+local function GetTargetPart(character)
+    return character:FindFirstChild(Options.Targetr.Value) or character:FindFirstChild("Head")
+end
+
+local function GetClosestTarget()
+    local closestPart = nil
+    local shortestDistance = math.huge
+    local mousePos = Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if IsPlayerValid(player) then
+            local part = GetTargetPart(player.Character)
+            if part then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                    if distance < shortestDistance and distance <= Options.FOV_Size.Value then
+                        shortestDistance = distance
+                        closestPart = part
+                    end
+                end
+            end
+        end
+    end
+
+    return closestPart
+end
+
+
+
+local SilentFOV = Drawing.new("Circle")
+SilentFOV.Radius = Options.FOV_Size.Value
+SilentFOV.Visible = false
+SilentFOV.Thickness = 1.5
+SilentFOV.ZIndex = 2
+SilentFOV.Color = Options.FOV_Color.Value
+
+local SilentFOVOutline = Drawing.new("Circle")
+SilentFOVOutline.Radius =  Options.FOV_Size.Value
+SilentFOVOutline.Visible = false
+SilentFOVOutline.Thickness = 2
+SilentFOVOutline.ZIndex = 1
+SilentFOVOutline.Color = Color3.fromRGB(0,0,0)
+
+
+
+local OldNamecall
+OldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local Args = {...}
+    local Method = getnamecallmethod()
+
+    if self == workspace and not checkcaller() then
+        if Method == "Raycast" and Toggles.Silent.Value and Target then
+            local Origin = Args[1]
+            if Toggles.MagicBullet.Value then
+                Args[1] = (Target.CFrame * CFrame.new(0, 0, 1)).p
+                Origin = Args[1]
+            end
+            Args[2] = (Target.Position - Origin).Unit * 1024
+        end
+    end
+
+    return OldNamecall(self, unpack(Args))
+end)
+
+
+
+RunService.Heartbeat:Connect(function()
+    if Toggles.Walkspeed.Value then
+        Humanoid.WalkSpeed = Options.Speed.Value
+    end
+    if Toggles.NoClip.Value then
+        pcall(function()
+            for i,v in pairs(Character:GetDescendants()) do
+                if v:IsA("BasePart") and v.CanCollide == true then
+					v.CanCollide = false
+				end
+            end
+        end)
+    end
+
+    Target = GetClosestTarget()
+    if Toggles.Silent.Value and Toggles.ShowFOV.Value then
+        SilentFOV.Visible = true
+        SilentFOVOutline.Visible = true
+
+        SilentFOV.Radius = Options.FOV_Size.Value
+        SilentFOVOutline.Radius = Options.FOV_Size.Value
+
+        SilentFOV.Position = UserInputService:GetMouseLocation()
+        SilentFOVOutline.Position = UserInputService:GetMouseLocation()
+        SilentFOV.Color = Options.FOV_Color.Value
+    else
+        SilentFOV.Visible = false
+        SilentFOVOutline.Visible = false
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+
+    if input.KeyCode == Enum.KeyCode.W then
+        Flymovement.forward = 1
+    elseif input.KeyCode == Enum.KeyCode.S then
+        Flymovement.forward = -1
+    elseif input.KeyCode == Enum.KeyCode.A then
+        Flymovement.right = -1
+    elseif input.KeyCode == Enum.KeyCode.D then
+        Flymovement.right = 1
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        Flymovement.up = 1
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        Flymovement.up = -1
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gpe)
+    if gpe then return end
+
+    if input.KeyCode == Enum.KeyCode.W or input.KeyCode == Enum.KeyCode.S then
+        Flymovement.forward = 0
+    elseif input.KeyCode == Enum.KeyCode.A or input.KeyCode == Enum.KeyCode.D then
+        Flymovement.right = 0
+    elseif input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.LeftShift then
+        Flymovement.up = 0
+    end
+end)
+
+do -- Final Loading
+
+	Library:SetWatermarkVisibility(true)
+	Connection = RunService.RenderStepped:Connect(function()
+		FrameCounter += 1 
+
+		if (tick() - FrameTimer) >= 1 then
+			FPS = FrameCounter 
+			FrameTimer = tick() 
+			FrameCounter = 0 
+		end 
+
+		Library:SetWatermark(('inertia | %s fps | %s ms'):format(math.floor(FPS),math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue()))) 
+	end) 
+
+	Library.KeybindFrame.Visible = true 
+
+	Library:OnUnload(function()
+		Library.Unloaded = true
+	end)
+
+	local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+	MenuGroup:AddButton('Unload', function() Library:Unload() end)
+
+	MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'End', NoUI = true, Text = 'Menu keybind' })
+
+	Library.ToggleKeybind = Options.MenuKeybind
+
+	ThemeManager:SetLibrary(Library)
+	SaveManager:SetLibrary(Library)
+	SaveManager:IgnoreThemeSettings()
+	SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+	ThemeManager:SetFolder('Inertia')
+	SaveManager:SetFolder('Inertia/Weaponary')
+	SaveManager:BuildConfigSection(Tabs['UI Settings'])
+	ThemeManager:ApplyToTab(Tabs['UI Settings'])
+	SaveManager:LoadAutoloadConfig()
+
+
+
+	local TimeToLoad = math.abs(StartTime - tick())
+	Library:Notify("Inertia: Took "..TimeToLoad.."s To Load",5)
+end

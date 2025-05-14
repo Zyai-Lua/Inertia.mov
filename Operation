@@ -12,6 +12,13 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild('HumanoidRootPart')
 local Humanoid = Character.Humanoid
 
+local Target
+
+local originalSpreadValues = {}
+local originalRecoilValues = {}
+local originalFirerateValues = {}
+local originalADSValues = {}
+
 local repo = 'https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/'
 
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Linoria'))()
@@ -31,6 +38,7 @@ local Window = Library:CreateWindow({
 local Tabs = {
 	Combat = Window:AddTab('Combat'),
     Visuals = Window:AddTab('Visuals'),
+    Misc = Window:AddTab('Miscellaneous'),
 	['UI Settings'] = Window:AddTab('UI Settings'),
 }
 
@@ -48,7 +56,7 @@ PlayerVisuals:AddToggle('HeadCircle', {Text = 'Head Circle', Default = false, To
 local SilentAim = Tabs.Combat:AddLeftGroupbox('Silent Aim')
 
 SilentAim:AddToggle('Silent', {Text = 'Enabled',Default = false,Tooltip = 'Enables Silent Aim',})
-SilentAim:AddToggle('Team_Check', {Text = 'Team Check',Default = false,Tooltip = 'Enables Team Check',})
+SilentAim:AddToggle('MagicBullet', {Text = 'Magic Bullet',Default = false,Tooltip = 'Shoot Players Through Walls',})
 SilentAim:AddToggle('ShowFOV', {Text = 'Show FOV',Default = false,Tooltip = 'Enables FOV Circle On Screen',}):AddColorPicker('FOV_Color', {Default = Color3.fromRGB(255, 255, 255),Title = 'Color',Transparency = 0,})
 SilentAim:AddSlider('Hit_Chance', {Text = 'Hit Chance',Default = 100,Min = 1,Max = 100,Rounding = 1,Compact = false,})
 SilentAim:AddSlider('FOV_Size', {Text = 'Size',Default = 100,Min = 1,Max = 1000,Rounding = 1,Compact = false,})
@@ -62,21 +70,24 @@ GunMods:AddToggle('NoRecoil', {Text = 'No Recoil',Default = false,Tooltip = '',C
             if typeof(obj) == "table" then
                 for key, value in pairs(obj) do
                     if typeof(key) == "string" and key:lower():find("recoil") and typeof(value) == "number" then
+                        originalRecoilValues[obj] = originalRecoilValues[obj] or {}
+                        if originalRecoilValues[obj][key] == nil then
+                            originalRecoilValues[obj][key] = value
+                        end
                         obj[key] = 0.000001
                     end
                 end
             end
         end
     else
-        for _, obj in ipairs(getgc(true)) do
+        for obj, keys in pairs(originalRecoilValues) do
             if typeof(obj) == "table" then
-                for key, value in pairs(obj) do
-                    if typeof(key) == "string" and key:lower():find("recoil") and typeof(value) == "number" then
-                        obj[key] = 0.5
-                    end
+                for key, originalValue in pairs(keys) do
+                    obj[key] = originalValue
                 end
             end
         end
+        originalRecoilValues = {}
     end
 end})
 
@@ -86,23 +97,95 @@ GunMods:AddToggle('NoSpread', {Text = 'No Spread',Default = false,Tooltip = '',C
             if typeof(obj) == "table" then
                 for key, value in pairs(obj) do
                     if typeof(key) == "string" and key:lower():find("spread") and typeof(value) == "number" then
+                        originalSpreadValues[obj] = originalSpreadValues[obj] or {}
+                        if originalSpreadValues[obj][key] == nil then
+                            originalSpreadValues[obj][key] = value
+                        end
                         obj[key] = 0.000001
                     end
                 end
             end
         end
     else
+        for obj, keys in pairs(originalSpreadValues) do
+            if typeof(obj) == "table" then
+                for key, originalValue in pairs(keys) do
+                    obj[key] = originalValue
+                end
+            end
+        end
+        originalSpreadValues = {}
+    end
+end})
+
+GunMods:AddToggle('FastFirerate', {Text = 'Fast Firerate',Default = false,Tooltip = '',Callback = function(val)
+    if val then
         for _, obj in ipairs(getgc(true)) do
             if typeof(obj) == "table" then
                 for key, value in pairs(obj) do
-                    if typeof(key) == "string" and key:lower():find("spread") and typeof(value) == "number" then
-                        obj[key] = 60
+                    if typeof(key) == "string" and key:lower():find("ShootRate") and typeof(value) == "number" then
+                        originalFirerateValues[obj] = originalFirerateValues[obj] or {}
+                        if originalFirerateValues[obj][key] == nil then
+                            originalFirerateValues[obj][key] = value
+                        end
+                        obj[key] = 10
                     end
                 end
             end
         end
+    else
+        for obj, keys in pairs(originalFirerateValues) do
+            if typeof(obj) == "table" then
+                for key, originalValue in pairs(keys) do
+                    obj[key] = originalValue
+                end
+            end
+        end
+        originalFirerateValues = {}
     end
 end})
+
+local PlrMods = Tabs.Misc:AddLeftGroupbox('Player Mods')
+
+PlrMods:AddToggle('Walkspeed', {Text = 'Enabled',Default = false,Tooltip = 'Enables Silent Aim',Callback = function(val)
+    if val then
+        Humanoid.WalkSpeed = Options.Speed.Value
+    else
+        Humanoid.WalkSpeed = 11
+    end
+end})
+PlrMods:AddSlider('Speed', {Text = 'Speed',Default = 11,Min = 1,Max = 100,Rounding = 1,Compact = false,})
+PlrMods:AddToggle('NoClip', {Text = 'No-Clip',Default = false,Tooltip = 'No Clip',Callback = function(val)
+    if not val then
+        for i,v in pairs(Character:GetDescendants()) do
+            if v:IsA("BasePart") and v.CanCollide == true then
+                v.CanCollide = false
+            end
+        end
+    end
+end})
+
+local velocity = Instance.new("BodyVelocity")
+velocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+velocity.P = 1e4
+velocity.Name = "FlyVelocity"
+
+local Flymovement = {
+    forward = 0,
+    right = 0,
+    up = 0
+}
+
+PlrMods:AddToggle('Fly', {Text = 'Flight',Default = false,Tooltip = 'Enables Silent Aim',Callback = function(val)
+    if val then
+        velocity.Parent = HumanoidRootPart
+    else
+        velocity.Parent = nil
+        humanoidRootPart.Velocity = Vector3.zero
+    end
+end})
+PlrMods:AddSlider('FlySpeed', {Text = 'Speed',Default = 11,Min = 1,Max = 100,Rounding = 1,Compact = false,})
+
 
 
 local function ESP(model)
@@ -351,36 +434,48 @@ end
 
 local GameFramework = getsenv(game:GetService("Players").LocalPlayer.PlayerGui.SE_Framework)
 
-local function GetClosestTarget()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
+local function IsPlayerValid(player)
+    if player == LocalPlayer then return false end
+    if not player.Character then return false end
 
-    local mouseLocation = Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)
-    local localTeam = LocalPlayer.Team
+    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+    if not humanoid or humanoid.Health <= 0 then return false end
+
+    if player.Team == LocalPlayer.Team then
+        return false
+    end
+
+    return true
+end
+
+local function GetTargetPart(character)
+    return character:FindFirstChild(Options.Targetr.Value) or character:FindFirstChild("Head")
+end
+
+local function GetClosestTarget()
+    local closestPart = nil
+    local shortestDistance = math.huge
+    local mousePos = Vector2.new(LocalPlayer:GetMouse().X, LocalPlayer:GetMouse().Y)
 
     for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Team ~= localTeam then
-            local character = player.Character
-            if character then
-                local hrp = character:FindFirstChild("HumanoidRootPart")
-                local humanoid = character:FindFirstChildOfClass("Humanoid")
-                if hrp and humanoid and humanoid.Health > 0 then
-                    local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-                    if onScreen then
-                        local screenVector = Vector2.new(screenPos.X, screenPos.Y)
-                        local distance = (screenVector - mouseLocation).Magnitude
-                        if distance < shortestDistance and distance < Options.FOV_Size.Value then
-                            shortestDistance = distance
-                            closestPlayer = player
-                        end
+        if IsPlayerValid(player) then
+            local part = GetTargetPart(player.Character)
+            if part then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local distance = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                    if distance < shortestDistance and distance <= Options.FOV_Size.Value then
+                        shortestDistance = distance
+                        closestPart = part
                     end
                 end
             end
         end
     end
 
-    return closestPlayer
+    return closestPart
 end
+
 
 
 local SilentFOV = Drawing.new("Circle")
@@ -397,22 +492,46 @@ SilentFOVOutline.Thickness = 2
 SilentFOVOutline.ZIndex = 1
 SilentFOVOutline.Color = Color3.fromRGB(0,0,0)
 
-local OldBullet = GameFramework.BulletRaycast
-GameFramework.BulletRaycast = function(...)
-    local Args = {...}
-    local ClosestTarget = GetClosestTarget()
-    local character = ClosestTarget and ClosestTarget.Character
-    local targetPart = character and character:FindFirstChild(Options.Targetr.Value)
-    local hrp = character and character:FindFirstChild("HumanoidRootPart")
 
-    if targetPart and hrp then
-        Args[2] = (targetPart.Position - Args[1]).Unit * 1024
+
+local OldNamecall
+OldNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local Args = {...}
+    local Method = getnamecallmethod()
+
+    if self == workspace and not checkcaller() then
+        if Method == "Raycast" and Toggles.Silent.Value and Target then
+            local Origin = Args[1]
+
+            if Toggles.MagicBullet.Value then
+                Args[1] = (Target.CFrame * CFrame.new(0, 0, 1)).p
+                Origin = Args[1]
+            end
+
+            Args[2] = (Target.Position - Origin).Unit * 1024
+        end
     end
-    return OldBullet(unpack(Args))
-end;
+
+    return OldNamecall(self, unpack(Args))
+end)
+
 
 
 RunService.Heartbeat:Connect(function()
+    if Toggles.Walkspeed.Value then
+        Humanoid.WalkSpeed = Options.Speed.Value
+    end
+    if Toggles.NoClip.Value then
+        pcall(function()
+            for i,v in pairs(Character:GetDescendants()) do
+                if v:IsA("BasePart") and v.CanCollide == true then
+					v.CanCollide = false
+				end
+            end
+        end)
+    end
+
+    Target = GetClosestTarget()
     if Toggles.Silent.Value and Toggles.ShowFOV.Value then
         SilentFOV.Visible = true
         SilentFOVOutline.Visible = true
@@ -427,9 +546,47 @@ RunService.Heartbeat:Connect(function()
         SilentFOV.Visible = false
         SilentFOVOutline.Visible = false
     end
+
+    if Toggles.Fly.Value then
+        local cam = workspace.CurrentCamera
+        local moveDir = (cam.CFrame.LookVector * Flymovement.forward + cam.CFrame.RightVector * Flymovement.right + Vector3.yAxis * Flymovement.up).Unit
+        if moveDir.Magnitude > 0 then
+            velocity.Velocity = moveDir * Options.FlySpeed.Value
+        else
+            velocity.Velocity = Vector3.zero
+        end
+    end
 end)
 
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
 
+    if input.KeyCode == Enum.KeyCode.W then
+        Flymovement.forward = 1
+    elseif input.KeyCode == Enum.KeyCode.S then
+        Flymovement.forward = -1
+    elseif input.KeyCode == Enum.KeyCode.A then
+        Flymovement.right = -1
+    elseif input.KeyCode == Enum.KeyCode.D then
+        Flymovement.right = 1
+    elseif input.KeyCode == Enum.KeyCode.Space then
+        Flymovement.up = 1
+    elseif input.KeyCode == Enum.KeyCode.LeftShift then
+        Flymovement.up = -1
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input, gpe)
+    if gpe then return end
+
+    if input.KeyCode == Enum.KeyCode.W or input.KeyCode == Enum.KeyCode.S then
+        Flymovement.forward = 0
+    elseif input.KeyCode == Enum.KeyCode.A or input.KeyCode == Enum.KeyCode.D then
+        Flymovement.right = 0
+    elseif input.KeyCode == Enum.KeyCode.Space or input.KeyCode == Enum.KeyCode.LeftShift then
+        Flymovement.up = 0
+    end
+end)
 
 do -- Final Loading
 
@@ -464,7 +621,7 @@ do -- Final Loading
 	SaveManager:IgnoreThemeSettings()
 	SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
 	ThemeManager:SetFolder('Inertia')
-	SaveManager:SetFolder('Inertia/Project Delta')
+	SaveManager:SetFolder('Inertia/Operation')
 	SaveManager:BuildConfigSection(Tabs['UI Settings'])
 	ThemeManager:ApplyToTab(Tabs['UI Settings'])
 	SaveManager:LoadAutoloadConfig()

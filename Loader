@@ -15,6 +15,6 @@ elseif game.PlaceId == 8204899140 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/ff2"))()
 elseif game.PlaceId == 13997264379 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Operation"))()
-elseif string.find(info, "Casual") or string.find(info, "Ranked") then then
+elseif string.find(info, "Casual") or string.find(info, "Ranked") then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Weaponary_Free"))()
 end

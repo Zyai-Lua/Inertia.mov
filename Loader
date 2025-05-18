@@ -1,3 +1,6 @@
+local MarketplaceService = game:GetService("MarketplaceService")
+local info = MarketplaceService:GetProductInfo(game.PlaceId)
+
 if game.PlaceId == 13083893317 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/LifeSentence"))()
 	wait()
@@ -12,6 +15,6 @@ elseif game.PlaceId == 8204899140 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/ff2"))()
 elseif game.PlaceId == 13997264379 then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Operation"))()
-elseif game.PlaceId == 3297964905 then
+elseif string.find(info, "Casual") or string.find(info, "Ranked") then then
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/Zyai-Lua/Inertia.mov/refs/heads/main/Weaponary_Free"))()
 end

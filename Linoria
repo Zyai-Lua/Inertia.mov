@@ -448,6 +448,24 @@ do
 			Parent = ToggleLabel;
 		});
 
+		local Glow = Library:Create('ImageLabel',{
+
+			Parent = DisplayFrame,
+                    Name = "",
+                    ImageColor3 = Color3.fromRGB(41, 41, 204),
+                    ScaleType = Enum.ScaleType.Slice,
+                    ImageTransparency = 0.8999999761581421,
+                    BorderColor3 = Color3.fromRGB(0, 0, 0),
+                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                    Image = "http://www.roblox.com/asset/?id=18245826428",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.new(0, -20, 0, -20),
+                    Size = UDim2.new(1, 40, 1, 40),
+                    ZIndex = 2,
+                    BorderSizePixel = 0,
+                    SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79))
+		})
+
 		-- Transparency image taken from https://github.com/matas3535/SplixPrivateDrawingLibrary/blob/main/Library.lua cus i'm lazy
 		local CheckerFrame = Library:Create('ImageLabel', {
 			BorderSizePixel = 0;
